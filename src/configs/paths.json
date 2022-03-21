@@ -1,0 +1,8 @@
+{
+    "paths": {
+        "ClothMask": ["data", "masktype", "Dataset", "ClothMask"],
+        "FFP2Mask": ["data", "masktype", "Dataset", "FFP2Mask"],
+        "SurgicalMask": ["data", "masktype", "Dataset", "SurgicalMask"],
+        "WithoutMask": ["data", "masktype", "Dataset", "WithoutMask"]
+    }
+}
