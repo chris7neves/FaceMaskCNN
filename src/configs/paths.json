@@ -1,8 +1,16 @@
 {
-    "paths": {
-        "ClothMask": ["data", "masktype", "Dataset", "ClothMask"],
-        "FFP2Mask": ["data", "masktype", "Dataset", "FFP2Mask"],
-        "SurgicalMask": ["data", "masktype", "Dataset", "SurgicalMask"],
-        "WithoutMask": ["data", "masktype", "Dataset", "WithoutMask"]
+    "paths_aug": {
+        "cloth_mask": ["data", "masktype", "Dataset", "cloth_mask_TF_aug"],
+        "faces": ["data", "masktype", "Dataset", "faces_TF_aug"],
+        "n95": ["data", "masktype", "Dataset", "n95_TF_aug"],
+        "n95_valve": ["data", "masktype", "Dataset", "n95_valve_TF_aug"],
+        "procedural_mask": ["data", "masktype", "Dataset", "procedural_mask_TF_aug"]
+    },
+    "paths_cropped": {
+        "cloth_mask": ["data", "masktype", "Dataset", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "Dataset", "faces_TF"],
+        "n95": ["data", "masktype", "Dataset", "n95_TF_aug"],
+        "n95_valve": ["data", "masktype", "Dataset", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "Dataset", "procedural_mask_TF"]
     }
 }
