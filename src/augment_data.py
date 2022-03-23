@@ -49,22 +49,24 @@ def masktype_augments(source, dest, final_size=64):
         # Start creating transforms
         
         # rotations
-        for i in [45, 90, -45, -90]:
+        for i in [15, -15]:
             spath = os.path.join(dest, "rot_{}".format(i) + img_name)
 
-            rot = t.rotate(img, angle=i)
-            rot_size_down = t.resize(rot, (final_size, final_size))
+            rot = t.rotate(img, angle=i, cval=1, mode="edge", resize=True)
+            #rot_size_down = t.resize(rot, (final_size, final_size))
 
-            to_save[spath] = rot_size_down
+            #to_save[spath] = rot_size_down
+            to_save[spath] = rot
 
         # Vertical mirroring
         spath = os.path.join(dest, "vflip_{}".format(i) + img_name)
         vflipped = np.fliplr(img)
-        vflipped_size_down = t.resize(vflipped, (final_size, final_size))
-        to_save[spath] = vflipped_size_down
+        #vflipped_size_down = t.resize(vflipped, (final_size, final_size))
+        #to_save[spath] = vflipped_size_down
+        to_save[spath] = vflipped
 
         # save the original, scaled down
-        img = t.resize(img, (final_size, final_size))
+        #img = t.resize(img, (final_size, final_size))
         img = img_as_ubyte(img)
         to_save[os.path.join(dest, img_name)] = img
 
@@ -87,9 +89,16 @@ def masktype_augments(source, dest, final_size=64):
 # for c, p in paths.items():
 #     rename_images(p, suffix=c.split("_")[0])
 
-rename_images(paths_cropped["procedural_mask"])
-dest = make_aug_dir(paths_cropped["procedural_mask"], overwrite=True)
-masktype_augments(paths_cropped["procedural_mask"], dest)
+# rename_images(paths_cropped["procedural_mask"])
+# dest = make_aug_dir(paths_cropped["procedural_mask"], overwrite=True)
+# masktype_augments(paths_cropped["procedural_mask"], dest)
+
+for c, p in paths_cropped.items():
+    if "procedural" not in p:
+        continue
+    dest = make_aug_dir(p, overwrite=False)
+    print(dest)
+    masktype_augments(p, dest)
 
     #  while choice not in ['o', 'n']:
     #         choice = input("Augment folders already exist. Overwrite (o) or save new (n)?")

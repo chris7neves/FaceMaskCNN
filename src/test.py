@@ -56,3 +56,4 @@ def test(model, dataloaders, criterion):
 
         acc = accuracy_score(all_labels, all_preds)
         print("Accuracy: {}".format(acc))
+        return (all_labels, all_preds)

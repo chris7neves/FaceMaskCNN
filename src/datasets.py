@@ -20,11 +20,12 @@ from configs.paths import root, data_dir
 
 class MaskTypeDataset(Dataset):
 
-    def __init__(self, datainfo_df, labels_df, transform=None):
+    def __init__(self, datainfo_df, labels_df, transform=None, grayscale=False):
         
         self.labels = labels_df
         self.img_paths = datainfo_df
         self.transform = transform
+        self.grayscale = grayscale
 
     def __len__(self):
         return len(self.labels)
@@ -32,18 +33,33 @@ class MaskTypeDataset(Dataset):
     def __getitem__(self, idx):
         #self.img_paths.to_csv("impathsdebug.csv")
         im_path = self.img_paths.at[idx, "im_path"]
-        image = imread(im_path, as_gray=False)
+        #print(im_path)
+
+        image = imread(im_path, as_gray=self.grayscale)
+     
+
         label = self.labels.at[idx]
+
+        #image = image[:, :, :]
+        # imshow(image)
+        # plt.show()
+
+        # print(image.shape)
+        if (not self.grayscale) and (image.shape[2] == 4):
+            image = image[:, :, :3]
+            # imshow(image)
+            # plt.show()
+        
         if self.transform:
             image = self.transform(image)
 
         # if(image.size(dim=0) == 4):
         #     image = image[:3, :, :]
-        #     temp = torch.swapaxes(image, 0, 1)
-        #     temp = torch.swapaxes(temp, 1, 2)
-        #     imshow(temp)
-        #     plt.show()
-
+            # temp = torch.swapaxes(image, 0, 1)
+            # temp = torch.swapaxes(temp, 1, 2)
+            # imshow(temp)
+            # plt.show()
+        
         return image, label
 
     def get_path(self, idx):
@@ -112,15 +128,15 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, validation=Tru
     else:
         return data_dict1 
 
-def get_masktype_datasets(data_dict, transform = None):
+def get_masktype_datasets(data_dict, transform = None, grayscale=False):
 
     # Create the datasets
     datasets = {}
     for t, d in data_dict.items():
         if transform:
-            datasets[t] = MaskTypeDataset(d[0], d[1], transform)
+            datasets[t] = MaskTypeDataset(d[0], d[1], transform, grayscale=grayscale)
         else:
-            datasets[t] = MaskTypeDataset(d[0], d[1])
+            datasets[t] = MaskTypeDataset(d[0], d[1], grayscale=grayscale)
 
     return datasets
 

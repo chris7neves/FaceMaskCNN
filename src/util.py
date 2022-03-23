@@ -25,6 +25,5 @@ def rename_images(im_dir, prefix="", suffix=""):
 def get_class(classes, label):
     return classes[np.where(label == 1)[0].item()]
 
-def transform_save_imgs(folder_path, transform):
-    pass
+
     
