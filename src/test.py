@@ -34,10 +34,9 @@ from torch.optim import Adam, SGD
 
 def test(model, dataloaders, criterion):
 
-
     testloader = dataloaders["test"]
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(): # Doing torch.no_grad as well as putting model into eval mode might be redundant
         all_preds = torch.tensor([])
         all_labels = torch.tensor([])
         for data in testloader:
@@ -51,9 +50,4 @@ def test(model, dataloaders, criterion):
             all_preds = torch.cat((all_preds, preds), dim=0)
             all_labels = torch.cat((all_labels, labels), dim=0)
 
-
-
-
-        acc = accuracy_score(all_labels, all_preds)
-        print("Accuracy: {}".format(acc))
         return (all_labels, all_preds)

@@ -1,6 +1,7 @@
 import os
 from matplotlib.pyplot import imshow
 import matplotlib.pyplot as plt
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -12,6 +13,8 @@ from torch.utils.data.dataset import Dataset
 import torchvision.transforms as T
 
 from configs.paths import root, data_dir
+
+RANDOM_SEED = 42
 
 ######################################
 #          Masktype Dataset          #
@@ -31,46 +34,29 @@ class MaskTypeDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        #self.img_paths.to_csv("impathsdebug.csv")
+
         im_path = self.img_paths.at[idx, "im_path"]
-        #print(im_path)
 
         image = imread(im_path, as_gray=self.grayscale)
      
-
         label = self.labels.at[idx]
 
-        #image = image[:, :, :]
-        # imshow(image)
-        # plt.show()
-
-        # print(image.shape)
         if (not self.grayscale) and (image.shape[2] == 4):
             image = image[:, :, :3]
-            # imshow(image)
-            # plt.show()
         
         if self.transform:
             image = self.transform(image)
-
-        # if(image.size(dim=0) == 4):
-        #     image = image[:3, :, :]
-            # temp = torch.swapaxes(image, 0, 1)
-            # temp = torch.swapaxes(temp, 1, 2)
-            # imshow(temp)
-            # plt.show()
         
         return image, label
 
     def get_path(self, idx):
         return self.img_paths.at[idx, "im_path"]
+
+    def get_label_distr(self, class_dict):
+        d = dict(Counter(self.labels.to_list()))
+        distr =  {class_dict[k] : v for (k, v) in d.items()}
+        return distr
         
-
-
-    #def load_images(self):
-        # Only implement if lazy loading takes forever
-
-
 def get_masktype_data_df(paths):
 
     class_dfs = []
@@ -105,7 +91,7 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, validation=Tru
                                             train_size=train_len+val_len, 
                                             test_size=test_len, 
                                             stratify=labels, 
-                                            random_state=42)
+                                            random_state=RANDOM_SEED)
 
     data_dict1 = {
         "train": [X_other.reset_index(drop=True), y_other.reset_index(drop=True)],
@@ -116,7 +102,7 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, validation=Tru
                                                     train_size=train_len, 
                                                     test_size=val_len, 
                                                     stratify=y_other, 
-                                                    random_state=42)
+                                                    random_state=RANDOM_SEED)
     data_dict2 = {
         "train": [X_train.reset_index(drop=True), y_train.reset_index(drop=True)],
         "test": [X_test.reset_index(drop=True), y_test.reset_index(drop=True)],
@@ -141,33 +127,17 @@ def get_masktype_datasets(data_dict, transform = None, grayscale=False):
     return datasets
 
 
-def get_dataloaders(datasets, batch_size=32):
+def get_dataloaders(datasets, train_batch_size=32, val_batch_size=32, test_batch_size=32):
 
     dataloaders = {}
     for t, s in datasets.items():
+        if t == "train":
+            batch_size = train_batch_size
+        elif t == "test":
+            batch_size = test_batch_size
+        elif t == "validation":
+            batch_size = val_batch_size
+
         dataloaders[t] = torch.utils.data.DataLoader(s, batch_size=batch_size, shuffle=True)
        
     return dataloaders
-
-
-
-
-# masktype_prepr = T.Compose([
-#     T.ToTensor(),
-#     T.Resize([32,32])
-# ])
-    
-# data_df = get_data_df()
-# labels = data_df.pop("label")
-# data_dict = lazy_load_train_val_test(data_df, labels, 0.7, 0.2, validation=True)
-# datasets = get_masktype_datasets(data_dict, masktype_prepr)
-# dataloaders = get_dataloaders(datasets)
-
-# feature, label = next(iter(dataloaders["validation"]))
-# print(f"Feature batch shape: {feature.size()}")
-# print(f"Labels batch shape: {label.size()}")
-# img = feature[0].squeeze()
-# label = label[0]
-# plt.imshow(img, cmap="gray")
-# plt.show()
-# print(f"Label: {label}")

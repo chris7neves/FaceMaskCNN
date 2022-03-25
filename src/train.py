@@ -1,35 +1,14 @@
 import os
-import sys
 from datetime import datetime
 
 from configs.paths import model_dir
 
-import pandas as pd
 import numpy as np
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES=True
-
-import seaborn as sns
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-
 import torch
-import torchvision
-from torch.utils.data import Dataset, DataLoader
-from torchvision.utils import make_grid
-from torchvision import transforms
-from torch.autograd import Variable
-import torchvision.transforms as T
-from torchsummary import summary
-import torch.nn.functional as F
-# MAKE SURE TO SHUFFLE IMPORT ORDER AND DELETE USELESS IMPORTS
-from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, Dropout, BatchNorm2d, BCELoss
-from torch.optim import Adam, SGD
 
-
-
-def train(model, dataloaders, epochs, optimizer, criterion, validation=True, save_trained=True, save_name=""):
+def train(model, dataloaders, epochs, optimizer, criterion, validation=True, save_name=""):
 
     train_losses = []
     
@@ -47,7 +26,6 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
         validation_accuracies = []
         lowest_val_loss = np.inf
         val_loader = dataloaders["validation"]
-
     
     for epoch in range(epochs):
 
@@ -73,7 +51,6 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
         
         train_loss = train_loss/n_batches
         train_losses.append(train_loss)
-
         
         if validation:
             model.eval()
@@ -102,7 +79,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
             validation_loss = validation_loss/n_batches
 
             if validation_loss < lowest_val_loss:
-                print("New lowest validation loss. Saving model.")
+                print("New lowest validation loss. Saving model...")
                 lowest_val_loss = validation_loss
                 to_save = model.state_dict()
                 torch.save(to_save, save_path)

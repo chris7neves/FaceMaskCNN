@@ -1,8 +1,41 @@
+from msilib.schema import Class
 import torch
 from torch.nn import MaxPool2d, Linear, ReLU, BatchNorm2d, Sequential, Conv2d, Dropout
-       
-class Fmcnn1(torch.nn.Module):
+import torchvision.transforms as T
 
+from torch.nn import CrossEntropyLoss
+from torch.optim import Adam
+
+# Get model objects 
+def get_fmcnn1(lr=0.001):
+    model_details = {}
+    model_details["model"] = Fmcnn1()
+    model_details["optimizer"] = Adam(model_details["model"].parameters(), lr)
+    model_details["criterion"] = CrossEntropyLoss()
+    model_details["transforms"] = {
+        "train": train_trans,
+        "test": test_trans
+    }
+    return model_details
+
+# Train time transforms
+train_trans = T.Compose([
+    T.ToTensor(),
+    T.Resize([64,64]),
+    T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    #T.Normalize((0.4453, ), (0.2692, ))
+    
+]) 
+
+# Test time transforms
+test_trans = T.Compose([
+    T.ToTensor(),
+    T.Resize([64,64]),
+    T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+])
+
+# Model Architecture
+class Fmcnn1(torch.nn.Module):
     def __init__(self):
         super().__init__()
         
@@ -42,34 +75,10 @@ class Fmcnn1(torch.nn.Module):
         x = self.linear_layers(x)
         return x
 
-# # quicker model for code testing
-# class Fmcnn1(torch.nn.Module):
-#     # WARNING: USE ONLY FOR TESTING
-#     def __init__(self):
-#         super().__init__()
-        
-#         self.cnn_layers = Sequential(
-
-#             Conv2d(3, 3, kernel_size=3, stride=1, padding=1),
-#             BatchNorm2d(3),
-#             ReLU(inplace=True),
-#             MaxPool2d(kernel_size=2, stride=1),
-            
-            
-#             Conv2d(3, 3, kernel_size=3, stride=5, padding=1),
-#             BatchNorm2d(3),
-#             ReLU(inplace=True)
-            
-#         )
-
-
-#         self.linear_layers = Sequential(
-#             Linear(3 * 13 * 13, 5)
-#         )
-
-   
-#     def forward(self, x):
-#         x = self.cnn_layers(x)
-#         x = x.view(x.size(0), -1)
-#         x = self.linear_layers(x)
-#         return x
+#####
+# Pred labels:
+# 0: cloth_mask
+# 1: faces
+# 2: n95
+# 3: n95_valve
+# 4: procedural_mask

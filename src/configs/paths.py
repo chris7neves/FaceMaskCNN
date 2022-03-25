@@ -6,7 +6,7 @@ conf_dir = os.path.dirname(__file__)
 root = os.path.abspath(os.path.join(conf_dir, os.pardir, os.pardir))
 data_dir = os.path.join(root, "data")
 model_dir = os.path.join(root, "src", "models")
-
+report_dir = os.path.join(root, "reports")
 
 pathsjson_path = os.path.join(conf_dir, "paths.json")
 with open(pathsjson_path, "r") as jin:

@@ -1,117 +1,151 @@
 import argparse
-from cProfile import label
+from datetime import datetime
 import os
 import sys
-from models.fmcnn1 import Fmcnn1
+
+from sklearn.metrics import accuracy_score
+
+# from models.fmcnn1 import Fmcnn1
+from models.available_models import model_dict
 from datasets import get_dataloaders, get_masktype_data_df, get_masktype_datasets, lazy_load_train_val_test
-
 import metrics_and_plotting as mp
-
-import numpy as np
-
 from train import train
 from test import test
-
-from configs.paths import paths_aug, paths_cropped, model_dir
-
-import pandas as pd
-import seaborn as sns
-
-from skimage.io import imread
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
-from sklearn.preprocessing import OneHotEncoder
+import infer as infer
+from configs.paths import paths_aug, paths_cropped, model_dir, report_dir
+from generate_report import generate_html_report
+from util import 
 
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-
+import pandas as pd
 import torch
-import torchvision
-from torch.utils.data import Dataset, DataLoader
-from torchvision.utils import make_grid
-from torchvision import transforms
-from torch.autograd import Variable
-import torchvision.transforms as T
-from torchsummary import summary
-import torch.nn.functional as F
-# MAKE SURE TO SHUFFLE IMPORT ORDER AND DELETE USELESS IMPORTS
-from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, Dropout, BatchNorm2d, BCELoss
-from torch.optim import Adam, SGD
 
 
+
+####################################################
+#                    PARSE ARGS                    #
+####################################################
 
 parser = argparse.ArgumentParser(description="Entrypoint to FaceMaskCNN model.")
 
 subparsers = parser.add_subparsers(dest='mode')
 
+# List model parser
+list_parser = subparsers.add_parser("model_list")
+
 # Training sub parser
 train_parser = subparsers.add_parser("train")
-train_parser.add_argument("--gen_report", action="store_true")
+train_parser.add_argument("model_name", action="store")
+train_parser.add_argument("--train_batchsz", action="store", default=124)
+train_parser.add_argument("--val_batchsz", action="store", default=124)
+train_parser.add_argument("--num_epochs", action="store", default=25)
+train_parser.add_argument("--skip_val", action="store_true")
+train_parser.add_argument("--save_losses", action="store_true")
 
 # Testing sub parser
 test_parser = subparsers.add_parser("test")
-test_parser. add_argument("from_saved", action="store")
+test_parser.add_argument("model_name", action="store")
+test_parser.add_argument("from_saved", action="store")
+test_parser.add_argument("--test_batchsz", action="store", default=300)
 test_parser.add_argument("--gen_report", action="store_true")
 
 # Inference sub parser
 infer_parser = subparsers.add_parser("infer")
-infer_parser.add_argument("--gen_report", action="store_true")
+infer_parser.add_argument("img_path", action="store")
+infer_parser.add_argument("model_name", action="store")
+infer_parser.add_argument("from_saved", action="store")
+infer_parser.add_argument("--from_directory", action="store_true")
 
 # List models
 list_parser = subparsers.add_parser("list_models")
 
-
 args = parser.parse_args()
 
-print(args.__str__())  
+####################################################
+#                   ARG HANDLING                   #
+####################################################
 
-if args.mode == "train":
+if args.mode == "model_list":
     
-    # Prepare transform
-    masktype_prepr = T.Compose([
-        T.ToTensor(),
-        T.Resize([64,64]),
-        T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-        #T.Normalize((0.4453, ), (0.2692, ))
-        
-    ]) 
+    print("Models available to use:")
+    for k in model_dict.keys():
+        print(k) 
+
+elif args.mode == "train":
+    
+    model_name = args.model_name
+
+    model_details = model_dict[model_name]()
+    model = model_details["model"]
+    optimizer = model_details["optimizer"]
+    criterion = model_details["criterion"]
+    transforms = model_details["transforms"]["train"]
 
     # Prepare dataloaders
+    print("Preparing datasets and data loaders ....")
     data_df = get_masktype_data_df(paths_aug)
+    label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
+    label_dict = {v : k for k, v in label_dict.items()}
     labels = data_df.pop("label")
-    data_dict = lazy_load_train_val_test(data_df, labels, 0.7, 0.2, validation=True)
-    datasets = get_masktype_datasets(data_dict, masktype_prepr, grayscale=False)
-    dataloaders = get_dataloaders(datasets, batch_size=124)
+    if args.skip_val:
+        train_prop = 0.8
+        val_prop = 0
+        validation = False
+    else:
+        train_prop = 0.7
+        val_prop = 0.2
+        validation = True
 
-    # Training parameters
-    model = Fmcnn1()
-    optimizer = Adam(model.parameters(), lr=0.001)
-    criterion = CrossEntropyLoss()
-    train_losses, validation_losses, validation_accuracies = train(model, dataloaders, 3, optimizer, criterion, validation=True)
+    data_dict = lazy_load_train_val_test(data_df, labels, train_prop, val_prop, validation=True)
+    datasets = get_masktype_datasets(data_dict, transforms, grayscale=False)
+    dataloaders = get_dataloaders(datasets, train_batch_size=124, val_batch_size=124)
+    print("Data is prepared.\n")
+    print("Training data has the following distribution:")
+    train_label_distr = datasets["train"].get_label_distr(label_dict)
+    for k, v in train_label_distr.items():
+        print("{}: {}".format(k, v))
+    
+    print("\nValidation data has the following distribution:")
+    valid_label_distr = datasets["validation"].get_label_distr(label_dict)
+    for k, v in valid_label_distr.items():
+        print("{}: {}".format(k, v))
+
+    print("\n===============================================================================================")
+    print("Begin training - Model: {} - Num Epochs: {}".format(model_name, args.num_epochs))
+    print("===============================================================================================\n")
+    train_losses, validation_losses, validation_accuracies = train(model, dataloaders, args.num_epochs, optimizer, criterion, validation=validation)
 
     mp.get_train_val_curve(train_losses, validation_losses, validation_accuracies)
-
     plt.show()
 
+    if args.save_losses:
+        time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+
+        tdf = pd.DataFrame(train_losses)
+        tdf.to_csv(
+            os.path.join(report_dir, "{}_{}_training_losses.csv".format(time_string, model_name))
+            )
+
+        vdf = pd.DataFrame(validation_losses)
+        vdf.to_csv(
+            os.path.join(report_dir, "{}_{}_validation_losses.csv".format(time_string, model_name))
+            )
+        plt.savefig(os.path.join(report_dir, "{}_{}_loss_acc_curve.jpg".format(time_string, model_name)))
+
 elif args.mode == "test":
-     
+    
+    # Get the savename of the saved weights and parameters
     savename = args.from_saved
 
-    # Validate savename to make sure it exists
+    # Validate savename to make sure it exists before executing code
     saved_model_path = os.path.join(model_dir, "saved_models", savename)
-    print(saved_model_path)
     if os.path.isfile(saved_model_path):
-        model = Fmcnn1()
+        model_details = model_dict[args.model_name]()
+        model = model_details["model"]
         model.load_state_dict(torch.load(saved_model_path))
     else:
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
         sys.exit(0)
-
-    masktype_prepr = T.Compose([
-        T.ToTensor(),
-        T.Resize([64,64]),
-        T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-    ])
 
     data_df = get_masktype_data_df(paths_aug)
 
@@ -119,10 +153,10 @@ elif args.mode == "test":
     label_dict = {v : k for k, v in label_dict.items()}
     labels = data_df.pop("label")
 
-    data_dict = lazy_load_train_val_test(data_df, labels, 0.7, 0.2, validation=True)
-    datasets = get_masktype_datasets(data_dict, masktype_prepr, grayscale=False)
+    data_dict = lazy_load_train_val_test(data_df, labels, 0.7, 0.2)
+    datasets = get_masktype_datasets(data_dict, model_details["transforms"]["test"], grayscale=False)
     dataloaders = get_dataloaders(datasets, batch_size=300)
-    criterion = CrossEntropyLoss()
+    criterion = model_details["criterion"]
 
     test_labels, test_preds = test(model, dataloaders, criterion)
 
@@ -130,14 +164,36 @@ elif args.mode == "test":
     print("===========================================================")
     if not isinstance(f1, float):
         for i, f in enumerate(f1):
-            
             print("{} F1 Score: {}".format(label_dict[i], f))
     else:
         print("F1 Score: {}".format(f1))
+    acc = accuracy_score(test_labels, test_preds)
+    print("Accuracy: {}".format(acc))
     print("===========================================================")
 
-    cmdf = mp.get_confusion_matrix_df(test_labels, test_preds, label_dict)
-    cmax = mp.get_confusion_matrix_ax(cmdf)
-    plt.show()
+    if args.gen_report:
+        generate_html_report(test_labels, test_preds, label_dict, 
+                            model_name=model.__class__.__name__,
+                            model_param_file=savename,  
+                            dest=report_dir)
 
+elif args.mode == "infer":
 
+    img_path = args.img_path
+    model_name = args.model_name
+    param_file = args.from_saved
+
+    saved_model_path = os.path.join(model_dir, "saved_models", param_file)
+    if os.path.isfile(saved_model_path):
+        model_details = model_dict[model_name]()
+        model = model_details["model"]
+        model.load_state_dict(torch.load(saved_model_path))
+    else:
+        print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
+        sys.exit(0)
+
+    transform = model_details["transforms"]["test"]
+    probs, preds = infer.infer(img_path, model, transform, as_label=True, label_dict=)
+
+    print(preds)
+    print(probs)
