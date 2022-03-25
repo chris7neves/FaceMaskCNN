@@ -3,24 +3,21 @@ from datetime import datetime
 import os
 import sys
 
+import torchvision.transforms as T
+import matplotlib.pyplot as plt
+import pandas as pd
+import torch
 from sklearn.metrics import accuracy_score
 
-# from models.fmcnn1 import Fmcnn1
 from models.available_models import model_dict
 from datasets import get_dataloaders, get_masktype_data_df, get_masktype_datasets, lazy_load_train_val_test
 import metrics_and_plotting as mp
 from train import train
 from test import test
 import infer as infer
-from configs.paths import paths_aug, paths_cropped, model_dir, report_dir
+from configs.paths import paths_aug, model_dir, report_dir
 from generate_report import generate_html_report
-from util import 
-
-import matplotlib.pyplot as plt
-import pandas as pd
-import torch
-
-
+from util import class_dict_from_aug_paths  
 
 ####################################################
 #                    PARSE ARGS                    #
@@ -193,7 +190,14 @@ elif args.mode == "infer":
         sys.exit(0)
 
     transform = model_details["transforms"]["test"]
-    probs, preds = infer.infer(img_path, model, transform, as_label=True, label_dict=)
+    probs, preds = infer.infer(img_path, model, transform, as_label=True, label_dict=class_dict_from_aug_paths())
 
-    print(preds)
-    print(probs)
+    to_tensor = T.Compose([T.ToTensor()])
+    image = infer.prep_image(img_path, transforms=to_tensor)
+
+    print("Class: {}".format(preds))
+    print("Probabilities: {}".format(probs.tolist()))
+
+    plt.imshow(image[0].permute(1, 2, 0))
+    plt.title(preds)
+    plt.show()

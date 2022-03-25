@@ -18,6 +18,6 @@ def infer(im_path, model, transforms, as_label=False, label_dict=None):
     prediction = torch.argmax(probabilities, 1)
 
     if as_label and label_dict is not None:
-        return label_dict[prediction.item()]
+        return probabilities, label_dict[prediction.item()]
 
-    return probabilities, prediction
+    return probabilities, prediction.item()
