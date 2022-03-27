@@ -115,7 +115,7 @@ Install the packages from the requirements.txt:
 python3 -m pip install -r requirements.txt
 ```
 
-Make sure that the data folder is in the following structure, after having extracted the Dataset.zip
+Make sure that the data folder is in the following structure, after having extracted the Dataset.zip. If any of the following directories do not exist, please create them.
 
 ```
 ├───data  
