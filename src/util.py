@@ -1,7 +1,6 @@
 import os
 from collections import Counter
 
-import numpy as np
 from torch.utils.data.dataset import Dataset
 
 

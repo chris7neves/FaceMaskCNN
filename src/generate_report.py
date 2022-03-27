@@ -1,4 +1,3 @@
-from sklearn.metrics import classification_report
 import metrics_and_plotting as mp
 from configs.paths import report_dir
 

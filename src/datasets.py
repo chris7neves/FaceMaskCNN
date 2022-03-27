@@ -1,18 +1,11 @@
 import os
-from matplotlib.pyplot import imshow
-import matplotlib.pyplot as plt
 from collections import Counter
 
-import numpy as np
 import pandas as pd
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
 import torch
-from torchvision import transforms, datasets
 from torch.utils.data.dataset import Dataset
-import torchvision.transforms as T
-
-from configs.paths import root, data_dir
 
 RANDOM_SEED = 42
 
