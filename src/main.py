@@ -114,7 +114,7 @@ elif args.mode == "train":
     print("\n===============================================================================================")
     print("Begin training - Model: {} - Num Epochs: {}".format(model_name, args.num_epochs))
     print("===============================================================================================\n")
-    train_losses, validation_losses, validation_accuracies = train(model, dataloaders, args.num_epochs, optimizer, criterion, validation=validation)
+    train_losses, validation_losses, validation_accuracies = train(model, dataloaders, int(args.num_epochs), optimizer, criterion, validation=validation)
 
     mp.get_train_val_curve(train_losses, validation_losses, validation_accuracies)
     plt.show()

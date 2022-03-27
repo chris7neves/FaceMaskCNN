@@ -7,7 +7,9 @@ Get a prediction on what mask a face is wearing in an image!
 2. [Installation](Installation)
 3. [Notes](Notes)
 4. [Use](Use)
+5. [Full Run](Full_Run)
 
+**NOTE**: Please go to the [Full Run](Full_Run) section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
 
 ## Directory Structure
 ```
@@ -193,3 +195,97 @@ This is the entry point in order to perform inference on an image.
 * img_path: the path to the image to perform inference on.
 * model_name: specify the name of a model that appears when running 'model_list'
 * from_saved: the name of the .pth file located in the src/models/saved_models/ directory. This is a filename, not a path.
+
+
+## Full Run
+
+This section will walk you through a full run of the project from cloning, to training, all the way to testing and inference.
+
+1. Cloning the repository:
+
+Navigate to the location you would like to keep this project in and rnu the command:
+
+```
+git clone https://github.com/chris7neves/FaceMaskCNN.git
+```
+
+2. Create the data directory 
+
+In the FaceMaskCNN project root create the following directory path:
+
+```
+data/masktype/
+```
+
+The data and the masktype directories will be empty for now. We will download the dataset in the next step.
+
+3. Download and extract the Dataset.zip file
+
+Navigate to the following google drive link: https://drive.google.com/file/d/11ee9cGV-W2EbAzFcpP6C38hkGLRXvgjD/view?usp=sharing
+
+Download the file that is found there.
+
+Once downloaded, place it in:
+
+```
+data/masktype/Dataset.zip
+```
+
+Extract the folder. The folder will be extracted to "Dataset/". You need to take the extracted folder and move it to /data/masktype/.
+
+The resulting directory structure of the data/ directory should now be:
+
+```
+├───data  
+    └──masktype
+       └──Dataset
+          ├───cloth_mask_TF_aug
+          ├───faces_TF_aug
+          ├───n95_TF_aug
+          ├───n95_valve_TF_aug
+          └───n95_valve_TF_aug
+```
+
+You can delete any empty folders and files outside of the above data directory structure.
+
+4. Create a virtual environment
+
+On windows, run the command to create a venv:
+```
+python3 -m venv fcnnvenv
+```
+
+or, depending on your python installation, simply:
+```
+python -m venv fcnnvenv
+```
+
+5. Activate the venv
+
+On windows, for powershell (Please see [Installation](Installation) for Unix and MacOS equivalent commands):
+```
+./fcnnvenv/Scripts/Activate.ps1
+```
+
+6. Install required packages from the included requirements.txt
+
+To use pip in order to install requirements, make sure that you currently have your fcnnvenv active and run the following command:
+
+```
+python -m pip install -r requirements.txt
+```
+
+7. CD into the src directory
+
+```
+cd src
+```
+
+8. Run the training loop
+
+Our results were obtained by running the training loop for 25 epochs, with a default batchsize that is hardcoded in the code. To reproduce that, we run:
+
+```
+python main.py train Fmcnn1 --num_epochs 25 --save_losses
+```
+This command will train the Fmcnn1 model for 25 epochs, and will save the training/validation loss curve to the FaceMaskCNN/reports/ directory
