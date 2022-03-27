@@ -117,6 +117,8 @@ python3 -m pip install -r requirements.txt
 
 Make sure that the data folder is in the following structure, after having extracted the Dataset.zip. If any of the following directories do not exist, please create them.
 
+Download the Dataset.zip from this link: https://drive.google.com/file/d/11ee9cGV-W2EbAzFcpP6C38hkGLRXvgjD/view?usp=sharing
+
 ```
 ├───data  
     └──masktype
