@@ -51,7 +51,7 @@ infer_parser = subparsers.add_parser("infer")
 infer_parser.add_argument("img_path", action="store")
 infer_parser.add_argument("model_name", action="store")
 infer_parser.add_argument("from_saved", action="store")
-infer_parser.add_argument("--from_directory", action="store_true")
+#infer_parser.add_argument("--from_directory", action="store_true")
 
 # List models
 list_parser = subparsers.add_parser("list_models")
@@ -72,6 +72,7 @@ elif args.mode == "train":
     
     model_name = args.model_name
 
+    # Get the model and all its parameters according to the name given in args
     model_details = model_dict[model_name]()
     model = model_details["model"]
     optimizer = model_details["optimizer"]
@@ -98,10 +99,13 @@ elif args.mode == "train":
     dataloaders = get_dataloaders(datasets, train_batch_size=124, val_batch_size=124)
     print("Data is prepared.\n")
     print("Training data has the following distribution:")
+
+    # Print the label distribution in the training set
     train_label_distr = datasets["train"].get_label_distr(label_dict)
     for k, v in train_label_distr.items():
         print("{}: {}".format(k, v))
     
+    # Print the label distribution in the validation set
     print("\nValidation data has the following distribution:")
     valid_label_distr = datasets["validation"].get_label_distr(label_dict)
     for k, v in valid_label_distr.items():
@@ -115,17 +119,20 @@ elif args.mode == "train":
     mp.get_train_val_curve(train_losses, validation_losses, validation_accuracies)
     plt.show()
 
+    # If save losses is specified, save the train, val loss accuracy curve to the report directory
     if args.save_losses:
         time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         tdf = pd.DataFrame(train_losses)
         tdf.to_csv(
-            os.path.join(report_dir, "{}_{}_training_losses.csv".format(time_string, model_name))
+            os.path.join(
+                report_dir, "{}_{}_training_losses.csv".format(time_string, model_name))
             )
 
         vdf = pd.DataFrame(validation_losses)
         vdf.to_csv(
-            os.path.join(report_dir, "{}_{}_validation_losses.csv".format(time_string, model_name))
+            os.path.join(
+                report_dir, "{}_{}_validation_losses.csv".format(time_string, model_name))
             )
         plt.savefig(os.path.join(report_dir, "{}_{}_loss_acc_curve.jpg".format(time_string, model_name)))
 
@@ -152,7 +159,7 @@ elif args.mode == "test":
 
     data_dict = lazy_load_train_val_test(data_df, labels, 0.7, 0.2)
     datasets = get_masktype_datasets(data_dict, model_details["transforms"]["test"], grayscale=False)
-    dataloaders = get_dataloaders(datasets, batch_size=300)
+    dataloaders = get_dataloaders(datasets, test_batch_size=300)
     criterion = model_details["criterion"]
 
     test_labels, test_preds = test(model, dataloaders, criterion)
@@ -166,6 +173,8 @@ elif args.mode == "test":
         print("F1 Score: {}".format(f1))
     acc = accuracy_score(test_labels, test_preds)
     print("Accuracy: {}".format(acc))
+    num_corr = mp.get_accuracy(test_labels, test_preds, True)
+    print("{} correct out of {}".format(num_corr, len(test_labels)))
     print("===========================================================")
 
     if args.gen_report:
@@ -180,6 +189,7 @@ elif args.mode == "infer":
     model_name = args.model_name
     param_file = args.from_saved
 
+    # Open the model with the parameters passed through the command line
     saved_model_path = os.path.join(model_dir, "saved_models", param_file)
     if os.path.isfile(saved_model_path):
         model_details = model_dict[model_name]()
@@ -189,9 +199,11 @@ elif args.mode == "infer":
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
         sys.exit(0)
 
+    # Run the inference
     transform = model_details["transforms"]["test"]
     probs, preds = infer.infer(img_path, model, transform, as_label=True, label_dict=class_dict_from_aug_paths())
 
+    # Display the image along with the results of the inference
     to_tensor = T.Compose([T.ToTensor()])
     image = infer.prep_image(img_path, transforms=to_tensor)
 

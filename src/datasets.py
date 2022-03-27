@@ -22,6 +22,10 @@ RANDOM_SEED = 42
 
 
 class MaskTypeDataset(Dataset):
+    """
+    Pytorch dataset wrapper for the mask type problem.
+    Adds convenience methods, and prepares dataset for use with pytorch dataloader.
+    """
 
     def __init__(self, datainfo_df, labels_df, transform=None, grayscale=False):
         
@@ -31,14 +35,15 @@ class MaskTypeDataset(Dataset):
         self.grayscale = grayscale
 
     def __len__(self):
+        """Overridden len function. Returns len of dataset."""
         return len(self.labels)
 
     def __getitem__(self, idx):
+        """Overridden getitem method. Returns an image and its label. Also applies transform to image."""
 
         im_path = self.img_paths.at[idx, "im_path"]
-
         image = imread(im_path, as_gray=self.grayscale)
-     
+    
         label = self.labels.at[idx]
 
         if (not self.grayscale) and (image.shape[2] == 4):
@@ -50,14 +55,24 @@ class MaskTypeDataset(Dataset):
         return image, label
 
     def get_path(self, idx):
+        """Get the path of an image in the dataset."""
         return self.img_paths.at[idx, "im_path"]
 
     def get_label_distr(self, class_dict):
+        """
+        Get the number of images per class in the dataset. 
+        Class dict is a dictionary that link an into to the corresponding class.
+        This is usually generated using the path order in paths.json.
+        """
         d = dict(Counter(self.labels.to_list()))
         distr =  {class_dict[k] : v for (k, v) in d.items()}
         return distr
         
 def get_masktype_data_df(paths):
+    """
+    Read the img paths into a df with corresponding label literal and categorical label.
+    Used for enabling lazy loading of images.
+    """
 
     class_dfs = []
     
@@ -75,6 +90,10 @@ def get_masktype_data_df(paths):
     return data
 
 def lazy_load_train_val_test(data, labels, train_size, test_size, validation=True):
+    """
+    Lazy load the data into train, validation and test sets. Train and test size are specified. If
+    validation is true, then the remainder from 1 - train_size - test_size = val_size.
+    """
 
     if validation:
         if (1-train_size-test_size) <= 0:
@@ -115,6 +134,10 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, validation=Tru
         return data_dict1 
 
 def get_masktype_datasets(data_dict, transform = None, grayscale=False):
+    """
+    Prepare the datasets for the masktype problem given the dict containing 
+    all the relevant dfs with img_paths and labels.
+    """
 
     # Create the datasets
     datasets = {}
@@ -128,6 +151,10 @@ def get_masktype_datasets(data_dict, transform = None, grayscale=False):
 
 
 def get_dataloaders(datasets, train_batch_size=32, val_batch_size=32, test_batch_size=32):
+    """
+    Given the datasets, prepare and return the dataloaders in a dict. 
+    "test", "train" and "validation" are the corresponding keys for the dataloaders in the returned dictionary.
+    """
 
     dataloaders = {}
     for t, s in datasets.items():

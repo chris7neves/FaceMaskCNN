@@ -8,6 +8,14 @@ from datetime import datetime
 
 
 def generate_html_report(labels, preds, class_dict, model_name, model_param_file, dest=report_dir):
+    """
+    Prepare a html report for the output of the model testing.
+    labels: true labels, categorical (not binary)
+    preds: predictions of the model, after going through argmax
+    class_dict: dict linking cat labels to string labels
+    model_name: name of the model that generated the predictions
+    model_param_file: .pth of the parameters use to get predictions
+    """
 
     accuracy = mp.get_accuracy(labels, preds)
     micro_precision, micro_recall = mp.get_precision_recall(labels, preds, average="micro")

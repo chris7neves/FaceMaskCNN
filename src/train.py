@@ -9,6 +9,15 @@ ImageFile.LOAD_TRUNCATED_IMAGES=True
 import torch
 
 def train(model, dataloaders, epochs, optimizer, criterion, validation=True, save_name=""):
+    """
+    The main training loop for the model.
+    :model: the model to be trained
+    :dataloaders: the dataloader dict, with the training loader ready
+    :epochs: the number of epochs to train the model for
+    :optimizer: the optimizer to use during training
+    :criterion: the loss criterion
+    :validation: if true, performs a validation loop at the end of training and enables early saving
+    """
 
     train_losses = []
     
@@ -27,6 +36,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
         lowest_val_loss = np.inf
         val_loader = dataloaders["validation"]
     
+    # Training loop
     for epoch in range(epochs):
 
         train_loss = 0
@@ -52,6 +62,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
         train_loss = train_loss/n_batches
         train_losses.append(train_loss)
         
+        # Validation loop
         if validation:
             model.eval()
 
@@ -78,6 +89,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
             
             validation_loss = validation_loss/n_batches
 
+            # If current model performs better than previous validation iterations, save it
             if validation_loss < lowest_val_loss:
                 print("New lowest validation loss. Saving model...")
                 lowest_val_loss = validation_loss
@@ -85,6 +97,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
                 torch.save(to_save, save_path)
                 print("Model saved to {}".format(save_path))
 
+            # Record validation losses and accuracy
             validation_losses.append(validation_loss)
             validation_accuracy = num_correct/total_data_len
             validation_accuracies.append(validation_accuracy)
@@ -93,6 +106,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
         print(dtobj, " ||  Epoch: {}  Training Loss: {}  Validation Loss: {}  Validation Acc: {}  Validation Data len: {}"
                 .format(epoch, train_loss, validation_loss, validation_accuracy, total_data_len))
 
+    # If validation not enabled, simply save the model that was just trained.
     if not validation:
         to_save = model.state_dict()
         torch.save(to_save, save_path)

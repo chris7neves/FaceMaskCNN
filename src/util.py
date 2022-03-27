@@ -28,7 +28,10 @@ def rename_images(im_dir, prefix="", suffix=""):
     return True
 
 def get_label_distr(dataset: Dataset, data_dict=None) -> dict:
-    # https://stackoverflow.com/questions/62319228/number-of-instances-per-class-in-pytorch-dataset
+    """
+    Gets the label distribution in a dataset. Iterates through the labels.
+    Inspiration: https://stackoverflow.com/questions/62319228/number-of-instances-per-class-in-pytorch-dataset
+    """
     
     per_class = [label for _, label in dataset]
     per_class = Counter(per_class)
@@ -36,5 +39,8 @@ def get_label_distr(dataset: Dataset, data_dict=None) -> dict:
     return dict(per_class)
 
 def class_dict_from_aug_paths():
+    """
+    Get the categorical variable, class name pairs from the saved json of class paths.
+    """
     class_labels = {i:k for i, (k, v) in enumerate(paths_aug.items())}
     return class_labels

@@ -1,13 +1,15 @@
-from msilib.schema import Class
 import torch
-from torch.nn import MaxPool2d, Linear, ReLU, BatchNorm2d, Sequential, Conv2d, Dropout
-import torchvision.transforms as T
-
+from torch.nn import MaxPool2d, Linear, ReLU, BatchNorm2d, Sequential, Conv2d
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
+import torchvision.transforms as T
 
-# Get model objects 
+
 def get_fmcnn1(lr=0.001):
+    """
+    Prepare the model, optimizer and loss criterion of the fmcnn1 model.
+    Returns a dict containing all of these.
+    """
     model_details = {}
     model_details["model"] = Fmcnn1()
     model_details["optimizer"] = Adam(model_details["model"].parameters(), lr)
@@ -22,20 +24,21 @@ def get_fmcnn1(lr=0.001):
 train_trans = T.Compose([
     T.ToTensor(),
     T.Resize([64,64]),
-    T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-    #T.Normalize((0.4453, ), (0.2692, ))
-    
+    T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))  
 ]) 
 
-# Test time transforms
+# Test/inference time transforms
 test_trans = T.Compose([
     T.ToTensor(),
     T.Resize([64,64]),
     T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ])
 
-# Model Architecture
+
 class Fmcnn1(torch.nn.Module):
+    """
+    Architecture of the Fmcnn1 model CNN.
+    """
     def __init__(self):
         super().__init__()
         
