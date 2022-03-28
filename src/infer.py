@@ -1,4 +1,5 @@
 from skimage.io import imread
+import torch
 
 
 def prep_image(im_path, transforms):

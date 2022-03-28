@@ -38,7 +38,7 @@ def get_f1_score(labels, preds, average='micro'):
     f1 = f1_score(labels, preds, average=average)
     return f1
 
-def get_accuracy(labels, preds, raw_correct=False):
+def get_accuracy(labels, preds, raw_correct=True):
     """Get the accuracy of the predictions. If raw correct, simply return number of correct predictions."""
     return accuracy_score(labels, preds, normalize=raw_correct)
 

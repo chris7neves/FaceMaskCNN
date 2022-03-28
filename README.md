@@ -221,7 +221,7 @@ The data and the masktype directories will be empty for now. We will download th
 
 3. Download and extract the Dataset.zip file
 
-Navigate to the following google drive link: https://drive.google.com/file/d/11ee9cGV-W2EbAzFcpP6C38hkGLRXvgjD/view?usp=sharing
+Navigate to the following google drive link: https://drive.google.com/file/d/1L5DKC7KfKLCzM8DUi2Ek9Y3FhwfkwPxP/view?usp=sharing
 
 Download the file that is found there.
 
