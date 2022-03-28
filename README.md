@@ -149,6 +149,9 @@ Changing the ordering can have adverse effects on training, testing and inferenc
 
 ## Use
 
+Skip to the last section [Full Run](Full_Run) in order to have a step by step guide on how to reproduce our results
+-----------------------------
+
 **To use any of the following commands, please ensure you are in the FaceMaskCnn/src directory. main.py is the main entrypoint to use the software.**
 
 Note, argparser is implemented for command line manipulation. Running:
@@ -281,7 +284,7 @@ python -m pip install -r requirements.txt
 cd src
 ```
 
-8. Run the training loop
+8. Run the training loop (SKIP THIS STEP IF USING OUR BEST PERFORMING PARAMETERS)
 
 Our results were obtained by running the training loop for 25 epochs, with a default batchsize that is hardcoded in the code. To reproduce that, we run:
 
@@ -289,3 +292,25 @@ Our results were obtained by running the training loop for 25 epochs, with a def
 python main.py train Fmcnn1 --num_epochs 25 --save_losses
 ```
 This command will train the Fmcnn1 model for 25 epochs, and will save the training/validation loss curve to the FaceMaskCNN/reports/ directory
+
+9. Use a .pth file saved in models/saved_models to test the model
+
+Our system uses the same random seed to split the data into test and training data on every run. This means that training data will never leak over into testing data, and vice versa. 
+
+To test our best performing model, enter the following command:
+
+```
+python main.py test Fmcnn1 1_33_47_73acc.pth --gen_report
+
+```
+1_33_47_73acc.pth is the name of the file containing the weights of our best performing model to date. The --gen_report flag will save a html report of the model's performance to FaceMaskCNN/reports/.
+
+10. Use our best performing model to get the label of any image
+
+Let img_path be the full absolute path of any image on your disk. In order to get good results, pick an image from our dataset.
+
+```
+python main.py infer img_path Fmcnn1 1_33_47_73acc.pth
+```
+
+This command with output the label of the provided image, as well as the activations of each of the neurons representing each of the classes.
