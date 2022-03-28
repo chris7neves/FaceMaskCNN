@@ -4,13 +4,13 @@ Get a prediction on what mask a face is wearing in an image!
 
 # Table of Contents
 1. [Directory Structure](Directory-Structure)
-2. [Full Run](Full_Run)
+2. [Full Run](Full-Run)
 3. [Installation](Installation)
 4. [Notes](Notes)
 5. [Use](Use)
 
 
-**NOTE**: Please go to the [Full Run](Full_Run) section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
+**NOTE**: Please go to the Full Run section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
 
 ## Directory Structure
 ```
@@ -154,7 +154,7 @@ python -m venv fcnnvenv
 
 5. Activate the venv
 
-On windows, for powershell (Please see [Installation](Installation) for Unix and MacOS equivalent commands):
+On windows, for powershell (Please see the Installation section for Unix and MacOS equivalent commands):
 ```
 ./fcnnvenv/Scripts/Activate.ps1
 ```
@@ -264,9 +264,6 @@ The order that the image paths appear in the paths.json file dictates the catego
 Changing the ordering can have adverse effects on training, testing and inference where the correct class labels are not properly shown.
 
 ## Use
-
-Skip to the last section [Full Run](Full_Run) in order to have a step by step guide on how to reproduce our results
------------------------------
 
 **To use any of the following commands, please ensure you are in the FaceMaskCnn/src directory. main.py is the main entrypoint to use the software.**
 
