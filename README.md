@@ -4,10 +4,11 @@ Get a prediction on what mask a face is wearing in an image!
 
 # Table of Contents
 1. [Directory Structure](Directory-Structure)
-2. [Installation](Installation)
-3. [Notes](Notes)
-4. [Use](Use)
-5. [Full Run](Full_Run)
+2. [Full Run](Full_Run)
+3. [Installation](Installation)
+4. [Notes](Notes)
+5. [Use](Use)
+
 
 **NOTE**: Please go to the [Full Run](Full_Run) section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
 
@@ -87,118 +88,6 @@ Get a prediction on what mask a face is wearing in an image!
 **models/fmcnn1.py**: Definition of the model Fmcnn1. This is the baseline, best performing model on the dataset.
 
 **models/saved_models/**: Contains the .pth files of all models that have been trained on the masktype dataset. Can be specified in test and infer modes.
-
-## Installation
-
-**This project uses python version 3.7. Other versions of python can be used, however this may have unintended consequences for the user.**
-
-To begin using this project, cd to the FaceMaskCNN directory.
-
-Once in that directory, use the following command to install all packages from the requirements file:
-
-
-Create the venv for the project (naming it the same as below will ensure that it does not get pushed to the repo):
-```
-python3 -m venv fcnnvenv
-```
-
-Activate the venv:
-```
-On PC:
-Windows CMD;           fcnnvenv\Scripts\activate.bat
-Windows PowerShell;    fcnnvenv\Scripts\Activate.ps1
-
-On Unix or MacOS:
-source fcnnvenv/bin/activate
-```
-
-Install the packages from the requirements.txt:
-```
-python3 -m pip install -r requirements.txt
-```
-
-Make sure that the data folder is in the following structure, after having extracted the Dataset.zip. If any of the following directories do not exist, please create them.
-
-Download the Dataset.zip from this link: https://drive.google.com/file/d/11ee9cGV-W2EbAzFcpP6C38hkGLRXvgjD/view?usp=sharing
-
-```
-├───data  
-    └──masktype
-       └──Dataset
-          ├───cloth_mask_TF_aug
-          ├───faces_TF_aug
-          ├───n95_TF_aug
-          ├───n95_valve_TF_aug
-          └───n95_valve_TF_aug
-```
-
-With each final directory holding all of the image files.
-
-## Notes
-
-Important: Do not change the contents of paths.json. If it needs to be changed for some reason, keep the path ordering the following:
-
-1. "cloth_mask"
-2. "faces"
-3. "n95"
-4. "n95_valve"
-5. "procedural_mask"
-
-The order that the image paths appear in the paths.json file dictates the categorical variable that will represent that particular class.
-Changing the ordering can have adverse effects on training, testing and inference where the correct class labels are not properly shown.
-
-## Use
-
-Skip to the last section [Full Run](Full_Run) in order to have a step by step guide on how to reproduce our results
------------------------------
-
-**To use any of the following commands, please ensure you are in the FaceMaskCnn/src directory. main.py is the main entrypoint to use the software.**
-
-Note, argparser is implemented for command line manipulation. Running:
-
-```
-python main.py -h
-```
-Will print a list of available commands and arguments.
-
-The FaceMaskCNN project has 4 main commands that can be invoked in the command line. These are:
-
-```
-python main.py model_list
-```
-model_list prints out all of the model definitions ready for training, testing and inference. Note that a model might exist to be trained, but does not have its parameters saved yet. Choosing this model to use during testing or inferrence might yield errors.
-
-```
-python main.py train model_name --train_batchsz --val_batchsz --num_epochs --skip_val --save_losses
-```
-This is the main training entrypoint for the package. 
-
-* model_name: required argument. Specify the name of a model that appears when running 'model_list'
-* train_batchsz: the batch size to use during training. Default is 124
-* val_batchsz: the batch size to use during validation. Default is 124
-* num_epochs: the number of epochs to run the training loop for. Default is 25
-* skip_val: do not perform validation during the training phase. More data is used to train the network, but best model saving is disabled. Not recommended.
-* save_losses: Save the training-validation loss and accuracy curve to the reports directory
-
-```
-python main.py test model_name from_saved --test_batchsz --gen_report
-```
-This is the main testing entrypoint. Requires a model to have already been trained and its .pth file to be located in the /FaceMaskCNN/src/models/saved_models/ directory.
-
-* model_name: same as above.
-* from_saved: the name of the .pth file located in the src/models/saved_models/ directory. This is a filename, not a path.
-* test_batchsz: batch size to use for testing. Default is 300.
-* gen_report: if specified, generates a .html report of the test statistics of the model, along with a confusion matrix. All is stored in the FaceMaskCNN/reports/ directory
-
-```
-python main.py infer img_path model_name from_saved 
-```
-This is the entry point in order to perform inference on an image. 
-
-* img_path: the path to the image to perform inference on.
-* model_name: specify the name of a model that appears when running 'model_list'
-* from_saved: the name of the .pth file located in the src/models/saved_models/ directory. This is a filename, not a path.
-
 
 ## Full Run
 
@@ -314,3 +203,115 @@ python main.py infer img_path Fmcnn1 1_33_47_73acc.pth
 ```
 
 This command with output the label of the provided image, as well as the activations of each of the neurons representing each of the classes.
+
+## Installation
+
+**This project uses python version 3.7. Other versions of python can be used, however this may have unintended consequences for the user.**
+
+To begin using this project, cd to the FaceMaskCNN directory.
+
+Once in that directory, use the following command to install all packages from the requirements file:
+
+
+Create the venv for the project (naming it the same as below will ensure that it does not get pushed to the repo):
+```
+python3 -m venv fcnnvenv
+```
+
+Activate the venv:
+```
+On PC:
+Windows CMD;           fcnnvenv\Scripts\activate.bat
+Windows PowerShell;    fcnnvenv\Scripts\Activate.ps1
+
+On Unix or MacOS:
+source fcnnvenv/bin/activate
+```
+
+Install the packages from the requirements.txt:
+```
+python3 -m pip install -r requirements.txt
+```
+
+Make sure that the data folder is in the following structure, after having extracted the Dataset.zip. If any of the following directories do not exist, please create them.
+
+Download the Dataset.zip from this link: https://drive.google.com/file/d/11ee9cGV-W2EbAzFcpP6C38hkGLRXvgjD/view?usp=sharing
+
+```
+├───data  
+    └──masktype
+       └──Dataset
+          ├───cloth_mask_TF_aug
+          ├───faces_TF_aug
+          ├───n95_TF_aug
+          ├───n95_valve_TF_aug
+          └───n95_valve_TF_aug
+```
+
+With each final directory holding all of the image files.
+
+## Notes
+
+Important: Do not change the contents of paths.json. If it needs to be changed for some reason, keep the path ordering the following:
+
+1. "cloth_mask"
+2. "faces"
+3. "n95"
+4. "n95_valve"
+5. "procedural_mask"
+
+The order that the image paths appear in the paths.json file dictates the categorical variable that will represent that particular class.
+Changing the ordering can have adverse effects on training, testing and inference where the correct class labels are not properly shown.
+
+## Use
+
+Skip to the last section [Full Run](Full_Run) in order to have a step by step guide on how to reproduce our results
+-----------------------------
+
+**To use any of the following commands, please ensure you are in the FaceMaskCnn/src directory. main.py is the main entrypoint to use the software.**
+
+Note, argparser is implemented for command line manipulation. Running:
+
+```
+python main.py -h
+```
+Will print a list of available commands and arguments.
+
+The FaceMaskCNN project has 4 main commands that can be invoked in the command line. These are:
+
+```
+python main.py model_list
+```
+model_list prints out all of the model definitions ready for training, testing and inference. Note that a model might exist to be trained, but does not have its parameters saved yet. Choosing this model to use during testing or inferrence might yield errors.
+
+```
+python main.py train model_name --train_batchsz --val_batchsz --num_epochs --skip_val --save_losses
+```
+This is the main training entrypoint for the package. 
+
+* model_name: required argument. Specify the name of a model that appears when running 'model_list'
+* train_batchsz: the batch size to use during training. Default is 124
+* val_batchsz: the batch size to use during validation. Default is 124
+* num_epochs: the number of epochs to run the training loop for. Default is 25
+* skip_val: do not perform validation during the training phase. More data is used to train the network, but best model saving is disabled. Not recommended.
+* save_losses: Save the training-validation loss and accuracy curve to the reports directory
+
+```
+python main.py test model_name from_saved --test_batchsz --gen_report
+```
+This is the main testing entrypoint. Requires a model to have already been trained and its .pth file to be located in the /FaceMaskCNN/src/models/saved_models/ directory.
+
+* model_name: same as above.
+* from_saved: the name of the .pth file located in the src/models/saved_models/ directory. This is a filename, not a path.
+* test_batchsz: batch size to use for testing. Default is 300.
+* gen_report: if specified, generates a .html report of the test statistics of the model, along with a confusion matrix. All is stored in the FaceMaskCNN/reports/ directory
+
+```
+python main.py infer img_path model_name from_saved 
+```
+This is the entry point in order to perform inference on an image. 
+
+* img_path: the path to the image to perform inference on.
+* model_name: specify the name of a model that appears when running 'model_list'
+* from_saved: the name of the .pth file located in the src/models/saved_models/ directory. This is a filename, not a path.
+
