@@ -3,11 +3,11 @@
 Get a prediction on what mask a face is wearing in an image!
 
 # Table of Contents
-1. [Directory Structure](Directory-Structure)
-2. [Full Run](Full-Run)
-3. [Installation](Installation)
-4. [Notes](Notes)
-5. [Use](Use)
+1. Directory Structure
+2. Full Run
+3. Installation
+4. Notes
+5. Use
 
 
 **NOTE**: Please go to the Full Run section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
