@@ -1,14 +1,23 @@
 import os
 from datetime import datetime
 
+import matplotlib
+
 from configs.paths import model_dir
 
+from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
+from sklearn.model_selection import KFold
 import numpy as np
 from PIL import ImageFile
+
+from datasets import RANDOM_SEED
 ImageFile.LOAD_TRUNCATED_IMAGES=True
 import torch
 
-def train(model, dataloaders, epochs, optimizer, criterion, validation=True, save_name=""):
+RANDOM_SEED = 42
+
+def train_val(model, dataloaders, epochs, optimizer, criterion, validation=True, save_name=""):
     """
     The main training loop for the model.
     :model: the model to be trained
@@ -18,8 +27,12 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
     :criterion: the loss criterion
     :validation: if true, performs a validation loop at the end of training and enables early saving
     """
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("Device: {}".format(device))
+    model.to(device)
 
     train_losses = []
+    train_accuracies = []
     
     if save_name:
         fname = save_name + ".pth"
@@ -41,13 +54,20 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
 
         train_loss = 0
         n_batches = 0
+        num_correct = 0
+        total_data_len = 0
 
         model.train()
         for i, data in enumerate(train_loader):
 
             inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
+            
             inputs = inputs.float()
             labels = labels.long()
+
+
+            #show_batch(inputs, labels)
 
             optimizer.zero_grad()
             output_train = model(inputs)
@@ -56,11 +76,15 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
             optimizer.step()
 
             train_loss += loss.item()
+            num_correct += (torch.argmax(output_train, 1) == labels).float().sum()
+            total_data_len += len(labels)
 
             n_batches += 1
         
         train_loss = train_loss/n_batches
         train_losses.append(train_loss)
+        train_accuracy = num_correct/total_data_len
+        train_accuracies.append(train_accuracy)
         
         # Validation loop
         if validation:
@@ -75,6 +99,8 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
             for i, data in enumerate(val_loader):
 
                 inputs, labels = data
+                inputs, labels = inputs.to(device), labels.to(device)
+
                 inputs = inputs.float()
                 labels = labels.long()
 
@@ -103,8 +129,12 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
             validation_accuracies.append(validation_accuracy)
 
         dtobj = datetime.now().time()
-        print(dtobj, " ||  Epoch: {}  Training Loss: {}  Validation Loss: {}  Validation Acc: {}  Validation Data len: {}"
-                .format(epoch, train_loss, validation_loss, validation_accuracy, total_data_len))
+        if validation:
+            print(dtobj, " ||  Epoch: {}  Training Loss: {}  Validation Loss: {}  Validation Acc: {}  Validation Data len: {}"
+                    .format(epoch, train_loss, validation_loss, validation_accuracy, total_data_len))
+        else:
+            print(dtobj, " ||  Epoch: {}  Training Loss: {}  Training Accuracy: {}"
+                    .format(epoch, train_loss, train_accuracy))
 
     # If validation not enabled, simply save the model that was just trained.
     if not validation:
@@ -115,4 +145,7 @@ def train(model, dataloaders, epochs, optimizer, criterion, validation=True, sav
     if validation:
         return (train_losses, validation_losses, validation_accuracies)
     else:
-        return train_losses
+        return (train_losses, None, None)
+
+
+        

@@ -1,3 +1,4 @@
+from cProfile import label
 import os
 from collections import Counter
 
@@ -6,6 +7,7 @@ from skimage.io import imread
 from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data.dataset import Dataset
+
 
 RANDOM_SEED = 42
 
@@ -82,26 +84,24 @@ def get_masktype_data_df(paths):
 
     return data
 
-def lazy_load_train_val_test(data, labels, train_size, test_size, validation=True):
+def lazy_load_train_val_test(data, labels, train_size, test_size, val_size=0):
     """
-    Lazy load the data into train, validation and test sets. Train and test size are specified. If
-    validation is true, then the remainder from 1 - train_size - test_size = val_size.
+    Lazy load the data into train, validation and test sets. Train and test size are specified. 
     """
 
-    if validation:
-        if (1-train_size-test_size) <= 0:
-            print("Validation is true but set sizes do not allow for it. Train: {}  Test: {}"
-                    .format(train_size, test_size))
-        else:
-            val_size = 1-train_size-test_size
-            val_len = int(val_size * len(labels))
+    if  (1-train_size-test_size-val_size) < 0:
+        print("Ratios specified for train/validation/test must sum to 1. Train: {}  Test: {}  Val: {}"
+                .format(train_size, test_size, val_size))
+
+    if train_size == 1:
+        data_dict = {"train": [data.reset_index(drop=True), labels.reset_index(drop=True)]}
+        return data_dict
 
     train_len = int(train_size * len(labels))
-    test_len = int(test_size * len(labels))
+    val_len = int(val_size * len(labels))
 
     X_other, X_test, y_other, y_test = train_test_split(data, labels,
-                                            train_size=train_len+val_len, 
-                                            test_size=test_len, 
+                                            train_size=(train_len + val_len), 
                                             stratify=labels, 
                                             random_state=RANDOM_SEED)
 
@@ -109,19 +109,20 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, validation=Tru
         "train": [X_other.reset_index(drop=True), y_other.reset_index(drop=True)],
         "test": [X_test.reset_index(drop=True), y_test.reset_index(drop=True)]
     }
-  
-    X_train, X_val, y_train, y_val = train_test_split(X_other, y_other,
-                                                    train_size=train_len, 
-                                                    test_size=val_len, 
-                                                    stratify=y_other, 
-                                                    random_state=RANDOM_SEED)
-    data_dict2 = {
-        "train": [X_train.reset_index(drop=True), y_train.reset_index(drop=True)],
-        "test": [X_test.reset_index(drop=True), y_test.reset_index(drop=True)],
-        "validation": [X_val.reset_index(drop=True), y_val.reset_index(drop=True)]
-    }
     
-    if validation:
+    if val_size != 0:
+        X_train, X_val, y_train, y_val = train_test_split(X_other, y_other,
+                                                        train_size=train_len, 
+                                                        test_size=val_len, 
+                                                        stratify=y_other, 
+                                                        random_state=RANDOM_SEED)
+        data_dict2 = {
+            "train": [X_train.reset_index(drop=True), y_train.reset_index(drop=True)],
+            "test": [X_test.reset_index(drop=True), y_test.reset_index(drop=True)],
+            "validation": [X_val.reset_index(drop=True), y_val.reset_index(drop=True)]
+        }
+    
+    if val_size != 0:
         return data_dict2
     else:
         return data_dict1 
@@ -161,3 +162,63 @@ def get_dataloaders(datasets, train_batch_size=32, val_batch_size=32, test_batch
         dataloaders[t] = torch.utils.data.DataLoader(s, batch_size=batch_size, shuffle=True)
        
     return dataloaders
+
+def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False, skip_val=False):
+
+    print("Preparing datasets and data loaders ....")
+    data_df = get_masktype_data_df(paths_dict)
+    label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
+    label_dict = {v : k for k, v in label_dict.items()}
+    labels = data_df.pop("label")
+    print(label_dict)
+    if train_on_everything:
+        train_prop = 1.0
+        val_prop = 0.0
+        test_prop = 0.0
+    elif skip_val:
+        train_prop = 0.8
+        val_prop = 0.0
+        test_prop = 1.0 - train_prop
+    else:
+        train_prop = 0.7
+        val_prop = 0.2
+        test_prop = 1.0 - val_prop - train_prop
+
+    data_dict = lazy_load_train_val_test(data_df, labels, train_prop, test_prop, val_prop)
+    datasets = get_masktype_datasets(data_dict, transforms, grayscale=False)
+    dataloaders = get_dataloaders(datasets, train_batch_size=128, val_batch_size=128)
+    print("Data is prepared.\n")
+    print("Training data has the following distribution:")
+
+    # Print the label distribution in the training set
+    train_label_distr = datasets["train"].get_label_distr(label_dict)
+    for k, v in train_label_distr.items():
+        print("{}: {}".format(k, v))
+
+    # Print the label distribution in the validation set
+    if val_prop != 0:
+        print("\nValidation data has the following distribution:")
+        valid_label_distr = datasets["validation"].get_label_distr(label_dict)
+        for k, v in valid_label_distr.items():
+            print("{}: {}".format(k, v))
+
+    return dataloaders
+
+def prepare_kfold_strategy(paths_dict, transforms):
+
+    # Get the data in a df
+    data_df = get_masktype_data_df(paths_dict)
+    label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
+    label_dict = {v : k for k, v in label_dict.items()}
+    labels = data_df.pop("label")
+    data_dict = lazy_load_train_val_test(data_df, labels, 1.0, 0.0, 0.0)
+
+    # Create datadict containing only a single set
+    datasets = get_masktype_datasets(data_dict, transforms, grayscale=False)
+
+    label_distr = datasets["train"].get_label_distr(label_dict)
+    for k, v in label_distr.items():
+        print("{}: {}".format(k, v))
+    
+    return datasets
+
