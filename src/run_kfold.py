@@ -1,3 +1,4 @@
+from audioop import bias
 from models.available_models import model_dict
 from sklearn.model_selection import KFold
 from torch.utils.data import SubsetRandomSampler, DataLoader
@@ -20,11 +21,16 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device being used for Kfold CV: {}".format(device))
 
+    # all_preds = []
+    # all_labels = []
+    # all_biases = []
+
     fold_info = {}
+    fold_labels_biases = {}
 
     for fold, (train_id, val_id) in enumerate(folded.split(np.arange(len(dataset)))):
 
-        print("----- Fold #: {}/{} -----".format(fold+1, n_splits))
+        print("----- Fold #: {}/{} Train len: {}  Val len: {} -----".format(fold+1, n_splits, len(train_id), len(val_id)))
 
         train_sampler = SubsetRandomSampler(train_id)
         val_sampler = SubsetRandomSampler(val_id)
@@ -38,7 +44,10 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
         optimizer = model_details["optimizer"]
         criterion = model_details["criterion"]
 
-        info = {"train_loss": [], "valid_loss": [], "train_acc": [], "valid_acc": []}
+        all_preds = []
+        all_labels = []
+        all_biases = []
+        info = {"train_loss": [], "train_acc": [], "valid_loss": [], "valid_acc": []}
 
         # Train loop
         model.train()
@@ -46,7 +55,13 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
 
             n_batches = 0
             train_loss, num_correct, total_data_len = 0.0, 0, 0
-            for images, labels in train_loader:
+            for images, package in train_loader:
+
+                if len(package) == 2:
+                    labels = package[0]
+                    #biases = package[1]
+                else:
+                    labels = package
 
                 images, labels = images.to(device), labels.to(device)
                 images = images.float()
@@ -75,8 +90,14 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
             n_batches = 0
             valid_loss, num_correct, total_data_len = 0.0, 0, 0
 
-            for images, labels in val_loader:
+            for images, package in val_loader:
                 
+                if len(package) == 2:
+                    labels = package[0]
+                    biases = package[1]
+                else:
+                    labels = package
+
                 images, labels = images.to(device), labels.to(device)
                 images = images.float()
                 labels = labels.long()
@@ -90,6 +111,16 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
                 num_correct += (torch.argmax(output, 1) == labels).float().sum()
                 total_data_len += len(labels)
 
+                if output.is_cuda and labels.is_cuda:
+                    outputcpu = output.cpu()
+                    labelscpu = labels.cpu()
+
+                if epoch == (epochs-1): # On the final training epoch, record validation results
+                    preds = torch.argmax(outputcpu, 1)
+                    all_preds.extend(preds.tolist())
+                    all_labels.extend(labelscpu.tolist())
+                    all_biases.extend(biases)
+
             valid_loss = valid_loss/n_batches
             info["valid_loss"].append(valid_loss)
             valid_accuracy = num_correct.item()/total_data_len
@@ -98,7 +129,10 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
             dtobj = datetime.now().time()
             print("[{}]:  ||  Epoch: {}  |  Training Loss: {} - Validation Loss: {} - Validation Acc: {} "
                     .format(dtobj, epoch, train_loss, valid_loss, valid_accuracy, total_data_len))
+        
+        fold_info[str(fold+1)] = info
+        results_dict = {"preds": all_preds, "labels": all_labels, "biases": all_biases}
+        fold_labels_biases[str(fold+1)] = results_dict
 
-        fold_info[str(fold)] = info
-
-    return fold_info
+    
+    return fold_info, fold_labels_biases

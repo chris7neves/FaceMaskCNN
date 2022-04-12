@@ -28,3 +28,9 @@ for k, v in pdict["paths_aug"].items():
 paths_cropped = {}
 for k, v in pdict["paths_cropped"].items():
     paths_cropped[k] = os.path.join(root, *v)
+
+def get_paths(paths_name):
+    paths = {}
+    for k, v in pdict[paths_name].items():
+        paths[k] = os.path.join(root, *v)
+    return paths

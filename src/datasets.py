@@ -22,12 +22,15 @@ class MaskTypeDataset(Dataset):
     Adds convenience methods, and prepares dataset for use with pytorch dataloader.
     """
 
-    def __init__(self, datainfo_df, labels_df, transform=None, grayscale=False):
+    def __init__(self, datainfo_df, labels_df, transform=None, grayscale=False, consider_bias=False):
         
         self.labels = labels_df
         self.img_paths = datainfo_df
         self.transform = transform
         self.grayscale = grayscale
+        self.consider_bias = consider_bias
+        if self.consider_bias:
+            self.biases = self.img_paths["im_path"].apply(lambda x: x.split("_")[-1].split(".")[0])
 
     def __len__(self):
         """Overridden len function. Returns len of dataset."""
@@ -47,7 +50,13 @@ class MaskTypeDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         
-        return image, label
+        if self.consider_bias:
+            # The name of the image will contain its bias category
+            bias = self.biases.at[idx]
+            return image, (label, bias)
+            #return image, (label, os.path.basename(im_path).split("_")[-1].split(".")[0])
+        else:
+            return image, label
 
     def get_path(self, idx):
         """Get the path of an image in the dataset."""
@@ -82,6 +91,29 @@ def get_masktype_data_df(paths):
     data["label_literal"] = pd.Categorical(data["label_literal"])
     data["label"] = data.label_literal.cat.codes
 
+    return data
+
+def get_masktype_data_df_recursive(paths):
+    
+    class_dfs = []
+
+    for _class, path in paths.items():
+        fpaths = []  
+        fnames = []      
+        for path, subdirs, files in os.walk(path):
+            for name in files:
+                fnames.append(name)
+                img_path = os.path.join(path, name)
+                fpaths.append(img_path)
+        df = pd.DataFrame.from_dict({"file_id":fnames, "im_path":fpaths})
+        df["label_literal"] = _class
+        class_dfs.append(df)
+    
+    data = pd.concat(class_dfs)
+    data = data.reset_index(drop=True)
+    data["label_literal"] = pd.Categorical(data["label_literal"])
+    data["label"] = data.label_literal.cat.codes
+    data.to_csv("FULLDATA.csv")
     return data
 
 def lazy_load_train_val_test(data, labels, train_size, test_size, val_size=0):
@@ -127,7 +159,7 @@ def lazy_load_train_val_test(data, labels, train_size, test_size, val_size=0):
     else:
         return data_dict1 
 
-def get_masktype_datasets(data_dict, transform = None, grayscale=False):
+def get_masktype_datasets(data_dict, transform = None, grayscale=False, consider_bias=False):
     """
     Prepare the datasets for the masktype problem given the dict containing 
     all the relevant dfs with img_paths and labels.
@@ -137,9 +169,9 @@ def get_masktype_datasets(data_dict, transform = None, grayscale=False):
     datasets = {}
     for t, d in data_dict.items():
         if transform:
-            datasets[t] = MaskTypeDataset(d[0], d[1], transform, grayscale=grayscale)
+            datasets[t] = MaskTypeDataset(d[0], d[1], transform, grayscale=grayscale, consider_bias=consider_bias)
         else:
-            datasets[t] = MaskTypeDataset(d[0], d[1], grayscale=grayscale)
+            datasets[t] = MaskTypeDataset(d[0], d[1], grayscale=grayscale, consider_bias=consider_bias)
 
     return datasets
 
@@ -162,6 +194,12 @@ def get_dataloaders(datasets, train_batch_size=32, val_batch_size=32, test_batch
         dataloaders[t] = torch.utils.data.DataLoader(s, batch_size=batch_size, shuffle=True)
        
     return dataloaders
+
+def get_label_dict(data_df):
+    label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
+    label_dict = {v : k for k, v in label_dict.items()}
+    return label_dict
+
 
 def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False, skip_val=False):
 
@@ -204,21 +242,29 @@ def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False
 
     return dataloaders
 
-def prepare_kfold_strategy(paths_dict, transforms):
+def prepare_kfold_strategy(paths_dict, transforms, bias, search_subdir):
 
     # Get the data in a df
-    data_df = get_masktype_data_df(paths_dict)
+    if search_subdir:
+        data_df = get_masktype_data_df_recursive(paths_dict)
+    else:
+        data_df = get_masktype_data_df(paths_dict)
+
     label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
     label_dict = {v : k for k, v in label_dict.items()}
+    print(label_dict)
     labels = data_df.pop("label")
     data_dict = lazy_load_train_val_test(data_df, labels, 1.0, 0.0, 0.0)
 
     # Create datadict containing only a single set
-    datasets = get_masktype_datasets(data_dict, transforms, grayscale=False)
+    if bias:
+        datasets = get_masktype_datasets(data_dict, transforms, grayscale=False, consider_bias=True)
+    else:
+        datasets = get_masktype_datasets(data_dict, transforms, grayscale=False, consider_bias=False)
 
     label_distr = datasets["train"].get_label_distr(label_dict)
     for k, v in label_distr.items():
         print("{}: {}".format(k, v))
     
-    return datasets
+    return datasets, label_dict
 

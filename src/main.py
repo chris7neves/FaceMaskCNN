@@ -17,8 +17,8 @@ from train import train_val
 from test import test
 from run_kfold import run_kfold
 import infer as infer
-from configs.paths import paths_aug, model_dir, report_dir
-from generate_report import generate_html_report
+from configs.paths import paths_aug, model_dir, report_dir, get_paths
+from generate_report import generate_html_report, generate_html_bias_report
 from util import class_dict_from_aug_paths  
 
 ####################################################
@@ -45,6 +45,9 @@ train_parser.add_argument("--train_on_everything", action="store_true")
 # KFold evaluation sub parser
 kfold_parser = subparsers.add_parser("kfold")
 kfold_parser.add_argument("model_name", action="store")
+kfold_parser.add_argument("paths_json_name", action="store")
+kfold_parser.add_argument("--search_subdir", action="store_true")
+kfold_parser.add_argument("--bias", action="store_true")
 kfold_parser.add_argument("--folds", action="store", default=10)
 kfold_parser.add_argument("--num_epochs", action="store", default=25)
 kfold_parser.add_argument("--batchsz", action="store", default=128)
@@ -136,16 +139,25 @@ elif args.mode == "kfold":
     model_details = model_dict[model_name]()
     transforms = model_details["transforms"]["train"]
 
-    datasets = prepare_kfold_strategy(paths_aug, transforms)
+    # Get the folder paths that contain the images
+    paths = get_paths(args.paths_json_name)
 
-    fold_results = run_kfold(model_name, datasets["train"], num_epochs, batch_sz, folds)
-    df = pd.DataFrame.from_dict(fold_results, orient='index')
+    datasets, label_dict = prepare_kfold_strategy(paths, transforms, args.bias, search_subdir=args.search_subdir)
 
-    time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    df.to_csv(
-        os.path.join(
-            report_dir, "{}_{}_fold_results.csv".format(time_string, model_name))
-        )
+    # Results dict contains preds, labels, biases in that order
+    # Fold info contains train and val loss and accuracy for each fold
+    fold_info, fold_labels_biases  = run_kfold(model_name, datasets["train"], num_epochs, batch_sz, folds)
+
+    generate_html_bias_report(fold_labels_biases, label_dict, model_name, fold_info)
+
+
+    # df = pd.DataFrame.from_dict(fold_info, orient='index')
+
+    # time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    # df.to_csv(
+    #     os.path.join(
+    #         report_dir, "{}_{}_fold_results.csv".format(time_string, model_name))
+    #     )
 
 elif args.mode == "test":
     
