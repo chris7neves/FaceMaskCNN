@@ -54,7 +54,6 @@ class MaskTypeDataset(Dataset):
             # The name of the image will contain its bias category
             bias = self.biases.at[idx]
             return image, (label, bias)
-            #return image, (label, os.path.basename(im_path).split("_")[-1].split(".")[0])
         else:
             return image, label
 

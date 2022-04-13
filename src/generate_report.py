@@ -103,8 +103,6 @@ def generate_html_bias_report(fold_labels_biases, label_dict, model_name, fold_i
     df_stats.loc["Std"] = df_pfmet.drop("Fold", axis=1).std()
 
     # Per class metrics for all folds
-    # print("Label length in metrics: {}".format(len(global_labels)))
-    # print("Preds length in metrics: {}".format(len(global_preds)))
     c_report = mp.get_classification_report_df(global_labels, global_preds, class_names=label_dict.values())
 
     # Confusion Matrix over all folds

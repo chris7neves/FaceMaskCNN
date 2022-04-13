@@ -16,8 +16,6 @@ class ImageDownloader(GoogleImagesSearch):
         # Our failed attempt to make it download the next 100 images (10 pages, 10 images each for pages 0-9):
         # self._page = 10
 
-
-
 def my_progressbar(url, progress):
     """ Too verbose, ended up not using it. """
     print(url + ' ' + str(progress) + '%')

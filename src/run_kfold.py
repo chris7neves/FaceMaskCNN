@@ -21,10 +21,6 @@ def run_kfold(model_name, dataset, epochs, batch_sz, n_splits=10):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("Device being used for Kfold CV: {}".format(device))
 
-    # all_preds = []
-    # all_labels = []
-    # all_biases = []
-
     fold_info = {}
     fold_labels_biases = {}
 

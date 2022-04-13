@@ -88,12 +88,6 @@ def masktype_augments(source, dest, save_original=False, final_size=64):
 
 if __name__ == "__main__":
 
-    # for c, p in paths_cropped.items():
-    #     if "procedural" not in p:
-    #         continue
-    #     dest = make_aug_dir(p, overwrite=False)
-    #     print(dest)
-    #     masktype_augments(p, dest)
     paths_dict = get_paths("paths_aug_unbalanced_race")
     for _class, dir in paths_dict.items():
         for path, subdirs, files in os.walk(dir):

@@ -62,18 +62,10 @@ def class_dict_from_aug_paths():
     class_labels = {i:k for i, (k, v) in enumerate(paths_aug.items())}
     return class_labels
 
-
-
-
-
 if __name__ == "__main__":
 
     paths = get_paths("paths_aug_balanced_race")
     rename_nested_dirs(paths)
 
-    # rename_images("F:\Libraries\Documents\ALL\School\GrDip\comp6721_applied_artificial_intelligence\project\FaceMaskCNN\data\masktype\DatasetGenderCropped\procedural_mask_TF\Male",
-    # prefix="p_",
-    # suffix="_male"
-    # )
 
     pass

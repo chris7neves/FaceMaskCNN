@@ -150,15 +150,6 @@ elif args.mode == "kfold":
 
     generate_html_bias_report(fold_labels_biases, label_dict, model_name, fold_info)
 
-
-    # df = pd.DataFrame.from_dict(fold_info, orient='index')
-
-    # time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    # df.to_csv(
-    #     os.path.join(
-    #         report_dir, "{}_{}_fold_results.csv".format(time_string, model_name))
-    #     )
-
 elif args.mode == "test":
     
     # Get the savename of the saved weights and parameters
