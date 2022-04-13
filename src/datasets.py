@@ -112,7 +112,7 @@ def get_masktype_data_df_recursive(paths):
     data = data.reset_index(drop=True)
     data["label_literal"] = pd.Categorical(data["label_literal"])
     data["label"] = data.label_literal.cat.codes
-    data.to_csv("FULLDATA.csv")
+
     return data
 
 def lazy_load_train_val_test(data, labels, train_size, test_size, val_size=0):
