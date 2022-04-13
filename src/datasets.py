@@ -200,10 +200,13 @@ def get_label_dict(data_df):
     return label_dict
 
 
-def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False, skip_val=False):
+def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False, skip_val=False, search_subdir=False):
 
     print("Preparing datasets and data loaders ....")
-    data_df = get_masktype_data_df(paths_dict)
+    if search_subdir:
+        data_df = get_masktype_data_df_recursive(paths_dict)
+    else:
+        data_df = get_masktype_data_df(paths_dict)
     label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
     label_dict = {v : k for k, v in label_dict.items()}
     labels = data_df.pop("label")

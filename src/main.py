@@ -96,9 +96,9 @@ elif args.mode == "train":
         skip_val=True
 
     # Prepare dataloaders for train/validation set strategy
-    dataloaders = prepare_train_val_strategy(paths_aug, transforms, 
+    dataloaders = prepare_train_val_strategy(get_paths("paths_aug_balanced_race"), transforms, 
                                             train_on_everything=args.train_on_everything,
-                                            skip_val=args.skip_val)
+                                            skip_val=args.skip_val, search_subdir=True)
 
     print("\n===============================================================================================")
     print("Begin training - Model: {} - Num Epochs: {}".format(model_name, args.num_epochs))
@@ -159,7 +159,7 @@ elif args.mode == "test":
     saved_model_path = os.path.join(model_dir, "saved_models", savename)
     if os.path.isfile(saved_model_path):
         model_details = model_dict[args.model_name]()
-        model = model_details["model"]()
+        model = model_details["model"]
         model.load_state_dict(torch.load(saved_model_path))
     else:
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
@@ -207,7 +207,7 @@ elif args.mode == "infer":
     saved_model_path = os.path.join(model_dir, "saved_models", param_file)
     if os.path.isfile(saved_model_path):
         model_details = model_dict[model_name]()
-        model = model_details["model"]()
+        model = model_details["model"]
         model.load_state_dict(torch.load(saved_model_path))
     else:
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))

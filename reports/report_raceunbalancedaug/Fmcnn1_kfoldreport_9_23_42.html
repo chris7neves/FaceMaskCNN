@@ -1,0 +1,331 @@
+
+
+    <html>
+        <head>
+            <title>Bias in AI Performance Report using Kfold CV - Model: Fmcnn1</title>
+        </head>
+        <body>
+            <h1>Model: Fmcnn1 </h1>
+            <h3>Report generated on: 2022-04-12 09:23:42.685941</h3>
+            <h2>Class distribution per bias category:</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cloth_mask</th>
+      <th>faces</th>
+      <th>n95</th>
+      <th>n95_valve</th>
+      <th>procedural_mask</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>indian</th>
+      <td>28</td>
+      <td>84</td>
+      <td>16</td>
+      <td>28</td>
+      <td>36</td>
+    </tr>
+    <tr>
+      <th>black</th>
+      <td>208</td>
+      <td>300</td>
+      <td>28</td>
+      <td>96</td>
+      <td>248</td>
+    </tr>
+    <tr>
+      <th>middleeastern</th>
+      <td>92</td>
+      <td>224</td>
+      <td>92</td>
+      <td>180</td>
+      <td>284</td>
+    </tr>
+    <tr>
+      <th>latinohispanic</th>
+      <td>116</td>
+      <td>112</td>
+      <td>108</td>
+      <td>124</td>
+      <td>116</td>
+    </tr>
+    <tr>
+      <th>asian</th>
+      <td>280</td>
+      <td>276</td>
+      <td>236</td>
+      <td>296</td>
+      <td>836</td>
+    </tr>
+    <tr>
+      <th>white</th>
+      <td>928</td>
+      <td>924</td>
+      <td>956</td>
+      <td>564</td>
+      <td>1456</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Per fold macro averaged metrics </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Fold</th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0.707974</td>
+      <td>0.714090</td>
+      <td>0.725308</td>
+      <td>0.707974</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>0.698276</td>
+      <td>0.698270</td>
+      <td>0.698404</td>
+      <td>0.698276</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.668824</td>
+      <td>0.680737</td>
+      <td>0.709765</td>
+      <td>0.668824</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0.692557</td>
+      <td>0.666713</td>
+      <td>0.704465</td>
+      <td>0.692557</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0.704423</td>
+      <td>0.692426</td>
+      <td>0.695073</td>
+      <td>0.704423</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>6</td>
+      <td>0.710895</td>
+      <td>0.716027</td>
+      <td>0.733349</td>
+      <td>0.710895</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>7</td>
+      <td>0.685005</td>
+      <td>0.692475</td>
+      <td>0.719479</td>
+      <td>0.685005</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>8</td>
+      <td>0.708738</td>
+      <td>0.692932</td>
+      <td>0.705049</td>
+      <td>0.708738</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>9</td>
+      <td>0.720604</td>
+      <td>0.704187</td>
+      <td>0.712408</td>
+      <td>0.720604</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>10</td>
+      <td>0.721683</td>
+      <td>0.724103</td>
+      <td>0.730594</td>
+      <td>0.721683</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Averaged Metric overview </h2>
+            <p> The average and standard dev. of all metrics over the cross validation folds. </p>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Mean</th>
+      <td>0.701898</td>
+      <td>0.698196</td>
+      <td>0.713389</td>
+      <td>0.701898</td>
+    </tr>
+    <tr>
+      <th>Std</th>
+      <td>0.016303</td>
+      <td>0.017215</td>
+      <td>0.013320</td>
+      <td>0.016303</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Per class metrics (over all folds) </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cloth_mask</th>
+      <th>faces</th>
+      <th>n95</th>
+      <th>n95_valve</th>
+      <th>procedural_mask</th>
+      <th>accuracy</th>
+      <th>macro avg</th>
+      <th>weighted avg</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>precision</th>
+      <td>0.7353</td>
+      <td>0.9446</td>
+      <td>0.4686</td>
+      <td>0.4613</td>
+      <td>0.7340</td>
+      <td>0.701898</td>
+      <td>0.6688</td>
+      <td>0.6989</td>
+    </tr>
+    <tr>
+      <th>recall</th>
+      <td>0.7113</td>
+      <td>0.9677</td>
+      <td>0.4359</td>
+      <td>0.4720</td>
+      <td>0.7530</td>
+      <td>0.701898</td>
+      <td>0.6680</td>
+      <td>0.7019</td>
+    </tr>
+    <tr>
+      <th>f1-score</th>
+      <td>0.7231</td>
+      <td>0.9560</td>
+      <td>0.4517</td>
+      <td>0.4666</td>
+      <td>0.7434</td>
+      <td>0.701898</td>
+      <td>0.6682</td>
+      <td>0.7002</td>
+    </tr>
+    <tr>
+      <th>Num_Samples</th>
+      <td>1652.0000</td>
+      <td>1920.0000</td>
+      <td>1436.0000</td>
+      <td>1288.0000</td>
+      <td>2976.0000</td>
+      <td>0.701898</td>
+      <td>9272.0000</td>
+      <td>9272.0000</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Confusion Matrix </h2>
+            <p> Confusion matrix of all predictions over all folds </p>
+            <img src='.\2022_04_12_09_23_40_cf_matrix_all.jpg' width="850">
+            <h2> Bias analysis: Metrics per Bias subset </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Subset</th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>white</td>
+      <td>0.702775</td>
+      <td>0.699172</td>
+      <td>0.699555</td>
+      <td>0.702775</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>middleeastern</td>
+      <td>0.706422</td>
+      <td>0.707116</td>
+      <td>0.717851</td>
+      <td>0.706422</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>indian</td>
+      <td>0.781250</td>
+      <td>0.781023</td>
+      <td>0.789064</td>
+      <td>0.781250</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>black</td>
+      <td>0.789773</td>
+      <td>0.801779</td>
+      <td>0.820110</td>
+      <td>0.789773</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>latinohispanic</td>
+      <td>0.668403</td>
+      <td>0.662602</td>
+      <td>0.665459</td>
+      <td>0.668403</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>asian</td>
+      <td>0.659563</td>
+      <td>0.663921</td>
+      <td>0.671429</td>
+      <td>0.659563</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Confusion Matrices per bias subset </h2>
+            <p>Subset: white </p><img src='.\2022_04_12_09_23_41_cf_matrix_white.jpg' width='850'><p>Subset: middleeastern </p><img src='.\2022_04_12_09_23_41_cf_matrix_middleeastern.jpg' width='850'><p>Subset: indian </p><img src='.\2022_04_12_09_23_41_cf_matrix_indian.jpg' width='850'><p>Subset: black </p><img src='.\2022_04_12_09_23_41_cf_matrix_black.jpg' width='850'><p>Subset: latinohispanic </p><img src='.\2022_04_12_09_23_42_cf_matrix_latinohispanic.jpg' width='850'><p>Subset: asian </p><img src='.\2022_04_12_09_23_42_cf_matrix_asian.jpg' width='850'>
+            <h2> Train/Validation Curve average over all folds </h2>
+            <img src='.\2022_04_12_09_23_42_train_val_bias.jpg' width="850">
+        </body>
+    </html>
+    

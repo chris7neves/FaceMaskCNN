@@ -1,0 +1,267 @@
+
+
+    <html>
+        <head>
+            <title>Bias in AI Performance Report using Kfold CV - Model: Fmcnn1</title>
+        </head>
+        <body>
+            <h1>Model: Fmcnn1 </h1>
+            <h3>Report generated on: 2022-04-12 02:48:50.343674</h3>
+            <h2>Class distribution per bias category:</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cloth_mask</th>
+      <th>faces</th>
+      <th>n95</th>
+      <th>n95_valve</th>
+      <th>procedural_mask</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>male</th>
+      <td>672</td>
+      <td>1032</td>
+      <td>684</td>
+      <td>652</td>
+      <td>1248</td>
+    </tr>
+    <tr>
+      <th>female</th>
+      <td>980</td>
+      <td>880</td>
+      <td>752</td>
+      <td>636</td>
+      <td>1720</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Per fold macro averaged metrics </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Fold</th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0.700864</td>
+      <td>0.698228</td>
+      <td>0.698028</td>
+      <td>0.700864</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>0.709503</td>
+      <td>0.714245</td>
+      <td>0.727995</td>
+      <td>0.709503</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.732181</td>
+      <td>0.727356</td>
+      <td>0.730335</td>
+      <td>0.732181</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0.739741</td>
+      <td>0.736458</td>
+      <td>0.735026</td>
+      <td>0.739741</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0.699784</td>
+      <td>0.701272</td>
+      <td>0.705218</td>
+      <td>0.699784</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>6</td>
+      <td>0.719222</td>
+      <td>0.719750</td>
+      <td>0.721707</td>
+      <td>0.719222</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>7</td>
+      <td>0.709189</td>
+      <td>0.709011</td>
+      <td>0.717448</td>
+      <td>0.709189</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>8</td>
+      <td>0.741622</td>
+      <td>0.733433</td>
+      <td>0.741135</td>
+      <td>0.741622</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>9</td>
+      <td>0.713514</td>
+      <td>0.719485</td>
+      <td>0.731969</td>
+      <td>0.713514</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>10</td>
+      <td>0.694054</td>
+      <td>0.691220</td>
+      <td>0.696969</td>
+      <td>0.694054</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Averaged Metric overview </h2>
+            <p> The average and standard dev. of all metrics over the cross validation folds. </p>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Mean</th>
+      <td>0.715967</td>
+      <td>0.715046</td>
+      <td>0.720583</td>
+      <td>0.715967</td>
+    </tr>
+    <tr>
+      <th>Std</th>
+      <td>0.016868</td>
+      <td>0.015156</td>
+      <td>0.015720</td>
+      <td>0.016868</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Per class metrics (over all folds) </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cloth_mask</th>
+      <th>faces</th>
+      <th>n95</th>
+      <th>n95_valve</th>
+      <th>procedural_mask</th>
+      <th>accuracy</th>
+      <th>macro avg</th>
+      <th>weighted avg</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>precision</th>
+      <td>0.7299</td>
+      <td>0.9546</td>
+      <td>0.4843</td>
+      <td>0.4821</td>
+      <td>0.7653</td>
+      <td>0.715968</td>
+      <td>0.6832</td>
+      <td>0.7151</td>
+    </tr>
+    <tr>
+      <th>recall</th>
+      <td>0.6755</td>
+      <td>0.9681</td>
+      <td>0.5049</td>
+      <td>0.4612</td>
+      <td>0.7887</td>
+      <td>0.715968</td>
+      <td>0.6797</td>
+      <td>0.7160</td>
+    </tr>
+    <tr>
+      <th>f1-score</th>
+      <td>0.7017</td>
+      <td>0.9613</td>
+      <td>0.4944</td>
+      <td>0.4714</td>
+      <td>0.7768</td>
+      <td>0.715968</td>
+      <td>0.6811</td>
+      <td>0.7152</td>
+    </tr>
+    <tr>
+      <th>Num_Samples</th>
+      <td>1652.0000</td>
+      <td>1912.0000</td>
+      <td>1436.0000</td>
+      <td>1288.0000</td>
+      <td>2968.0000</td>
+      <td>0.715968</td>
+      <td>9256.0000</td>
+      <td>9256.0000</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Confusion Matrix </h2>
+            <p> Confusion matrix of all predictions over all folds </p>
+            <img src='.\2022_04_12_02_48_49_cf_matrix_all.jpg' width="850">
+            <h2> Bias analysis: Metrics per Bias subset </h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Subset</th>
+      <th>Acc</th>
+      <th>F1_macro</th>
+      <th>Prec_macro</th>
+      <th>Recall_macro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>female</td>
+      <td>0.716989</td>
+      <td>0.716304</td>
+      <td>0.716235</td>
+      <td>0.716989</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>male</td>
+      <td>0.714785</td>
+      <td>0.714099</td>
+      <td>0.714512</td>
+      <td>0.714785</td>
+    </tr>
+  </tbody>
+</table>
+            <h2> Confusion Matrices per bias subset </h2>
+            <p>Subset: female </p><img src='.\2022_04_12_02_48_49_cf_matrix_female.jpg' width='850'><p>Subset: male </p><img src='.\2022_04_12_02_48_50_cf_matrix_male.jpg' width='850'>
+            <h2> Train/Validation Curve average over all folds </h2>
+            <img src='.\2022_04_12_02_48_50_train_val_bias.jpg' width="850">
+        </body>
+    </html>
+    
