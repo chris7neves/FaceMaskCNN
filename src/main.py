@@ -10,13 +10,15 @@ import torch
 from sklearn.metrics import accuracy_score
 
 from models.available_models import model_dict
-from datasets import get_dataloaders, get_masktype_data_df, get_masktype_datasets, lazy_load_train_val_test
+from datasets import get_dataloaders, get_masktype_data_df, get_masktype_datasets, lazy_load_train_val_test, prepare_kfold_strategy
+from datasets import prepare_train_val_strategy
 import metrics_and_plotting as mp
-from train import train
+from train import train_val
 from test import test
+from run_kfold import run_kfold
 import infer as infer
-from configs.paths import paths_aug, model_dir, report_dir
-from generate_report import generate_html_report
+from configs.paths import paths_aug, model_dir, report_dir, get_paths
+from generate_report import generate_html_report, generate_html_bias_report
 from util import class_dict_from_aug_paths  
 
 ####################################################
@@ -33,11 +35,23 @@ list_parser = subparsers.add_parser("model_list")
 # Training sub parser
 train_parser = subparsers.add_parser("train")
 train_parser.add_argument("model_name", action="store")
-train_parser.add_argument("--train_batchsz", action="store", default=124)
-train_parser.add_argument("--val_batchsz", action="store", default=124)
+train_parser.add_argument("--save_losses", action="store_true", default=True)
 train_parser.add_argument("--num_epochs", action="store", default=25)
+train_parser.add_argument("--train_batchsz", action="store", default=128)
+train_parser.add_argument("--val_batchsz", action="store", default=128)
 train_parser.add_argument("--skip_val", action="store_true")
-train_parser.add_argument("--save_losses", action="store_true")
+train_parser.add_argument("--train_on_everything", action="store_true")
+
+# KFold evaluation sub parser
+kfold_parser = subparsers.add_parser("kfold")
+kfold_parser.add_argument("model_name", action="store")
+kfold_parser.add_argument("paths_json_name", action="store")
+kfold_parser.add_argument("--search_subdir", action="store_true")
+kfold_parser.add_argument("--bias", action="store_true")
+kfold_parser.add_argument("--folds", action="store", default=10)
+kfold_parser.add_argument("--num_epochs", action="store", default=25)
+kfold_parser.add_argument("--batchsz", action="store", default=128)
+
 
 # Testing sub parser
 test_parser = subparsers.add_parser("test")
@@ -51,13 +65,9 @@ infer_parser = subparsers.add_parser("infer")
 infer_parser.add_argument("img_path", action="store")
 infer_parser.add_argument("model_name", action="store")
 infer_parser.add_argument("from_saved", action="store")
-#infer_parser.add_argument("--from_directory", action="store_true")
-
-# List models
-list_parser = subparsers.add_parser("list_models")
 
 args = parser.parse_args()
-
+print(args)
 ####################################################
 #                   ARG HANDLING                   #
 ####################################################
@@ -79,44 +89,26 @@ elif args.mode == "train":
     criterion = model_details["criterion"]
     transforms = model_details["transforms"]["train"]
 
-    # Prepare dataloaders
-    print("Preparing datasets and data loaders ....")
-    data_df = get_masktype_data_df(paths_aug)
-    label_dict = dict(list(data_df.groupby(["label_literal", "label"]).indices.keys()))
-    label_dict = {v : k for k, v in label_dict.items()}
-    labels = data_df.pop("label")
-    if args.skip_val:
-        train_prop = 0.8
-        val_prop = 0
-        validation = False
-    else:
-        train_prop = 0.7
-        val_prop = 0.2
-        validation = True
+    train_on_everything = args.train_on_everything
+    skip_val = args.skip_val
+    if (not skip_val) and args.train_on_everything:
+        print("train_on_everything specified. Skipping validation during training.")
+        skip_val=True
 
-    data_dict = lazy_load_train_val_test(data_df, labels, train_prop, val_prop, validation=True)
-    datasets = get_masktype_datasets(data_dict, transforms, grayscale=False)
-    dataloaders = get_dataloaders(datasets, train_batch_size=124, val_batch_size=124)
-    print("Data is prepared.\n")
-    print("Training data has the following distribution:")
-
-    # Print the label distribution in the training set
-    train_label_distr = datasets["train"].get_label_distr(label_dict)
-    for k, v in train_label_distr.items():
-        print("{}: {}".format(k, v))
-    
-    # Print the label distribution in the validation set
-    print("\nValidation data has the following distribution:")
-    valid_label_distr = datasets["validation"].get_label_distr(label_dict)
-    for k, v in valid_label_distr.items():
-        print("{}: {}".format(k, v))
+    # Prepare dataloaders for train/validation set strategy
+    dataloaders = prepare_train_val_strategy(paths_aug, transforms, 
+                                            train_on_everything=args.train_on_everything,
+                                            skip_val=args.skip_val)
 
     print("\n===============================================================================================")
     print("Begin training - Model: {} - Num Epochs: {}".format(model_name, args.num_epochs))
     print("===============================================================================================\n")
-    train_losses, validation_losses, validation_accuracies = train(model, dataloaders, int(args.num_epochs), optimizer, criterion, validation=validation)
-
+    
+    train_losses, validation_losses, validation_accuracies = train_val(model, dataloaders, 
+                                                                        int(args.num_epochs), optimizer, 
+                                                                        criterion, validation=not skip_val)
     mp.get_train_val_curve(train_losses, validation_losses, validation_accuracies)
+    plt.tight_layout()
     plt.show()
 
     # If save losses is specified, save the train, val loss accuracy curve to the report directory
@@ -136,6 +128,37 @@ elif args.mode == "train":
             )
         plt.savefig(os.path.join(report_dir, "{}_{}_loss_acc_curve.jpg".format(time_string, model_name)))
 
+elif args.mode == "kfold":
+
+    model_name = args.model_name
+    num_epochs = int(args.num_epochs)
+    folds = int(args.folds)
+    batch_sz = int(args.batchsz)
+
+    # Get the model and all its parameters according to the name given in args
+    model_details = model_dict[model_name]()
+    transforms = model_details["transforms"]["train"]
+
+    # Get the folder paths that contain the images
+    paths = get_paths(args.paths_json_name)
+
+    datasets, label_dict = prepare_kfold_strategy(paths, transforms, args.bias, search_subdir=args.search_subdir, grayscale=False)
+
+    # Results dict contains preds, labels, biases in that order
+    # Fold info contains train and val loss and accuracy for each fold
+    fold_info, fold_labels_biases  = run_kfold(model_name, datasets["train"], num_epochs, batch_sz, folds)
+
+    generate_html_bias_report(fold_labels_biases, label_dict, model_name, fold_info)
+
+
+    # df = pd.DataFrame.from_dict(fold_info, orient='index')
+
+    # time_string = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    # df.to_csv(
+    #     os.path.join(
+    #         report_dir, "{}_{}_fold_results.csv".format(time_string, model_name))
+    #     )
+
 elif args.mode == "test":
     
     # Get the savename of the saved weights and parameters
@@ -145,7 +168,7 @@ elif args.mode == "test":
     saved_model_path = os.path.join(model_dir, "saved_models", savename)
     if os.path.isfile(saved_model_path):
         model_details = model_dict[args.model_name]()
-        model = model_details["model"]
+        model = model_details["model"]()
         model.load_state_dict(torch.load(saved_model_path))
     else:
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
@@ -193,7 +216,7 @@ elif args.mode == "infer":
     saved_model_path = os.path.join(model_dir, "saved_models", param_file)
     if os.path.isfile(saved_model_path):
         model_details = model_dict[model_name]()
-        model = model_details["model"]
+        model = model_details["model"]()
         model.load_state_dict(torch.load(saved_model_path))
     else:
         print("Invalid .pth or .pt file specified: {}".format(saved_model_path))
