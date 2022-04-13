@@ -9,7 +9,7 @@ from skimage.util import img_as_ubyte
 from skimage.color import rgba2rgb
 
 from util import rename_images
-from configs.paths import paths_aug, paths_cropped
+from configs.paths import paths_aug, paths_cropped, get_paths
 
 #TODO: Link the augmenting to a cmd line entrypoint so module does not have to be manually run
 
@@ -31,7 +31,7 @@ def make_aug_dir(dir_path, overwrite=False):
 
     return new_dir
 
-def masktype_augments(source, dest, final_size=64):
+def masktype_augments(source, dest, save_original=False, final_size=64):
     """
     Applied the following transforms to images:
     - rotation, 15 deg in either direction
@@ -54,18 +54,24 @@ def masktype_augments(source, dest, final_size=64):
         
         # rotations
         for i in [15, -15]:
-            spath = os.path.join(dest, "rot_{}".format(i) + img_name)
+            if i == -15:
+                label = "neg15"
+            else:
+                label = "15"
+
+            spath = os.path.join(dest, "rot_{}".format(label) + img_name)
             rot = t.rotate(img, angle=i, cval=1, mode="edge", resize=True)
             to_save[spath] = rot
 
         # Vertical mirroring
-        spath = os.path.join(dest, "vflip_{}".format(i) + img_name)
+        spath = os.path.join(dest, "vflip_" + img_name)
         vflipped = np.fliplr(img)
         to_save[spath] = vflipped
 
         # save the original
-        img = img_as_ubyte(img)
-        to_save[os.path.join(dest, img_name)] = img
+        if save_original:
+            img = img_as_ubyte(img)
+            to_save[os.path.join(dest, img_name)] = img
 
         for save_path, image in to_save.items():
             image = img_as_ubyte(image)
@@ -80,9 +86,19 @@ def masktype_augments(source, dest, final_size=64):
                     print("{}".format(save_path))
                     continue
 
-for c, p in paths_cropped.items():
-    if "procedural" not in p:
-        continue
-    dest = make_aug_dir(p, overwrite=False)
-    print(dest)
-    masktype_augments(p, dest)
+if __name__ == "__main__":
+
+    # for c, p in paths_cropped.items():
+    #     if "procedural" not in p:
+    #         continue
+    #     dest = make_aug_dir(p, overwrite=False)
+    #     print(dest)
+    #     masktype_augments(p, dest)
+    paths_dict = get_paths("paths_aug_unbalanced_race")
+    for _class, dir in paths_dict.items():
+        for path, subdirs, files in os.walk(dir):
+            # for name in files:
+            #
+            if not subdirs:
+                print("--------------- AUGMENTING {}".format(path))
+                masktype_augments(path, path, save_original=False)

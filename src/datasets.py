@@ -242,7 +242,7 @@ def prepare_train_val_strategy(paths_dict, transforms, train_on_everything=False
 
     return dataloaders
 
-def prepare_kfold_strategy(paths_dict, transforms, bias, search_subdir):
+def prepare_kfold_strategy(paths_dict, transforms, bias, search_subdir, grayscale=False):
 
     # Get the data in a df
     if search_subdir:
@@ -258,9 +258,9 @@ def prepare_kfold_strategy(paths_dict, transforms, bias, search_subdir):
 
     # Create datadict containing only a single set
     if bias:
-        datasets = get_masktype_datasets(data_dict, transforms, grayscale=False, consider_bias=True)
+        datasets = get_masktype_datasets(data_dict, transforms, grayscale=grayscale, consider_bias=True)
     else:
-        datasets = get_masktype_datasets(data_dict, transforms, grayscale=False, consider_bias=False)
+        datasets = get_masktype_datasets(data_dict, transforms, grayscale=grayscale, consider_bias=False)
 
     label_distr = datasets["train"].get_label_distr(label_dict)
     for k, v in label_distr.items():

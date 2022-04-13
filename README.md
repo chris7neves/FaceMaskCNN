@@ -5,9 +5,11 @@ Get a prediction on what mask a face is wearing in an image!
 # Table of Contents
 1. Directory Structure
 2. Full Run
-3. Installation
-4. Notes
-5. Use
+3. Kfold Use (command to run in order to reproduce kfold experiment)
+4. Installation
+5. Notes
+6. Use
+
 
 
 **NOTE**: Please go to the Full Run section of this README if you simply want to replicate the training, testing and inference procedures followed for our project submission.
@@ -37,6 +39,9 @@ Get a prediction on what mask a face is wearing in an image!
     │   test.py
     │   train.py
     │   util.py
+    │   race_sorter.py
+    │   run_kfold.py
+    │   mean_and_std_calculator.py
     │   
     ├───configs
     │   |   paths.json
@@ -44,6 +49,7 @@ Get a prediction on what mask a face is wearing in an image!
     └───models
         |   available_models.py
         |   fmcnn1.py
+        │   fmcnn2.py
         └───saved_models
             └───1_33_47_73acc.pth
 ```
@@ -76,6 +82,11 @@ Get a prediction on what mask a face is wearing in an image!
 **src/train.py**: Contains code used to run the training loop of the models.
 
 **src/util.py**: Utility and helper functions not related to the model
+
+**src/mean_and_std_calculator**: Utility to find the mean and std of our dataset
+
+**src/race_sorter.py**: Helper script that identifies different races in an image
+
 <br></br>
 
 **configs/paths.json**: Contains the tokenized paths to the image directories
@@ -87,7 +98,11 @@ Get a prediction on what mask a face is wearing in an image!
 
 **models/fmcnn1.py**: Definition of the model Fmcnn1. This is the baseline, best performing model on the dataset.
 
+**models/fmcnn2.py**: Definition of the model Fmcnn2. This is the model designed to perform well on the bias dataset.
+
 **models/saved_models/**: Contains the .pth files of all models that have been trained on the masktype dataset. Can be specified in test and infer modes.
+
+
 
 ## Full Run
 
@@ -203,6 +218,31 @@ python main.py infer img_path Fmcnn1 1_33_47_73acc.pth
 ```
 
 This command with output the label of the provided image, as well as the activations of each of the neurons representing each of the classes.
+
+## Command to run kfold
+
+Follow all instructions from the "Full Run" section until step 8. At step 3, download these datasets instead:
+
+The unbalanced dataset for the gender subcategory can be found here:
+https://drive.google.com/file/d/1ed5mIbJ0L0dYSbLJ0BYe21ynDObY_JKn/view?usp=sharing
+
+The balanced dataset for the gender subcategory can be found here:
+https://drive.google.com/file/d/1FLMmGz0HqRZfCckPz3pPt2i1OmNA6cQj/view?usp=sharing
+
+The unbalanced and balanced datasets for the race subcategory can be found here: https://www.dropbox.com/s/c7w0ppibe3i8e9t/dataset_race_fixed.zip?dl=0
+
+
+Run the following command:
+```
+python main.py kfold Fmcnn2 <path> --bias --search_subdir --folds 10 --num_epochs 10 --batchsz 64
+```
+
+Where "path" is any of the following options:
+
+* paths_aug_unbalanced_gender
+* paths_aug_unbalanced_race
+* paths_aug_balanced_gender
+* paths_aug_balanced_race
 
 ## Installation
 

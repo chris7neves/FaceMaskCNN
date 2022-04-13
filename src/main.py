@@ -67,7 +67,7 @@ infer_parser.add_argument("model_name", action="store")
 infer_parser.add_argument("from_saved", action="store")
 
 args = parser.parse_args()
-
+print(args)
 ####################################################
 #                   ARG HANDLING                   #
 ####################################################
@@ -133,7 +133,7 @@ elif args.mode == "kfold":
     model_name = args.model_name
     num_epochs = int(args.num_epochs)
     folds = int(args.folds)
-    batch_sz = args.batchsz
+    batch_sz = int(args.batchsz)
 
     # Get the model and all its parameters according to the name given in args
     model_details = model_dict[model_name]()
@@ -142,7 +142,7 @@ elif args.mode == "kfold":
     # Get the folder paths that contain the images
     paths = get_paths(args.paths_json_name)
 
-    datasets, label_dict = prepare_kfold_strategy(paths, transforms, args.bias, search_subdir=args.search_subdir)
+    datasets, label_dict = prepare_kfold_strategy(paths, transforms, args.bias, search_subdir=args.search_subdir, grayscale=False)
 
     # Results dict contains preds, labels, biases in that order
     # Fold info contains train and val loss and accuracy for each fold

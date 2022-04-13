@@ -5,13 +5,13 @@ from torch.optim import Adam
 import torchvision.transforms as T
 
 
-def get_fmcnn1(lr=0.001):
+def get_fmcnn2(lr=0.00025):
     """
-    Prepare the model, optimizer and loss criterion of the fmcnn1 model.
+    Prepare the model, optimizer and loss criterion of the fmcnn2 model.
     Returns a dict containing all of these.
     """
     model_details = {}
-    model_details["model"] = Fmcnn1()
+    model_details["model"] = Fmcnn2()
     model_details["optimizer"] = Adam(model_details["model"].parameters(), lr)
     model_details["criterion"] = CrossEntropyLoss()
     model_details["transforms"] = {
@@ -37,7 +37,7 @@ test_trans = T.Compose([
 ])
 
 
-class Fmcnn1(torch.nn.Module):
+class Fmcnn2(torch.nn.Module):
     """
     Architecture of the Fmcnn1 model CNN.
     """
@@ -46,31 +46,24 @@ class Fmcnn1(torch.nn.Module):
         
         self.cnn_layers = Sequential(
 
-            Conv2d(3, 8, kernel_size=3, stride=1, padding=1),
-            BatchNorm2d(8),
+            Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d(32),
             ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=1),
             
-            
-            Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-
-
-            Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            
-
-            Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
+            Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             BatchNorm2d(32),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
+
+            Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d(64),
+            ReLU(inplace=True)
+           
+            
         )
 
         self.linear_layers = Sequential(
-            Linear(32 * 15 * 15, 5)
+            Linear(64 * 32 * 32, 5)
         )
 
    
@@ -79,7 +72,6 @@ class Fmcnn1(torch.nn.Module):
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         return x
-
 
 #####
 # Pred labels:

@@ -12,5 +12,48 @@
         "n95": ["data", "masktype", "Dataset", "cropped", "n95_TF"],
         "n95_valve": ["data", "masktype", "Dataset", "cropped", "n95_valve_TF"],
         "procedural_mask": ["data", "masktype", "Dataset", "cropped", "procedural_mask_TF"]
+    },
+    "paths_cropped_gender": {
+        "cloth_mask": ["data", "masktype", "DatasetGenderCropped", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetGenderCropped", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetGenderCropped", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetGenderCropped", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetGenderCropped", "procedural_mask_TF"]
+    },
+    "paths_cropped_race": {
+        "cloth_mask": ["data", "masktype", "DatasetRaceCropped", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetRaceCropped", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetRaceCropped", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetRaceCropped", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetRaceCropped", "procedural_mask_TF"]
+    },
+    "paths_aug_unbalanced_gender": {
+        "cloth_mask": ["data", "masktype", "DatasetGenderCroppedAugUnbalanced", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetGenderCroppedAugUnbalanced", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetGenderCroppedAugUnbalanced", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetGenderCroppedAugUnbalanced", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetGenderCroppedAugUnbalanced", "procedural_mask_TF"]
+    },
+    "paths_aug_unbalanced_race": {
+        "cloth_mask": ["data", "masktype", "DatasetRaceCroppedAugUnbalanced", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetRaceCroppedAugUnbalanced", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetRaceCroppedAugUnbalanced", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetRaceCroppedAugUnbalanced", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetRaceCroppedAugUnbalanced", "procedural_mask_TF"]
+    },
+    "paths_aug_balanced_gender": {
+        "cloth_mask": ["data", "masktype", "DatasetGenderCroppedAugBalanced", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetGenderCroppedAugBalanced", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetGenderCroppedAugBalanced", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetGenderCroppedAugBalanced", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetGenderCroppedAugBalanced", "procedural_mask_TF"]
+    },
+    "paths_aug_balanced_race": {
+        "cloth_mask": ["data", "masktype", "DatasetRaceCroppedAugBalanced", "cloth_mask_TF"],
+        "faces": ["data", "masktype", "DatasetRaceCroppedAugBalanced", "faces_TF"],
+        "n95": ["data", "masktype", "DatasetRaceCroppedAugBalanced", "n95_TF"],
+        "n95_valve": ["data", "masktype", "DatasetRaceCroppedAugBalanced", "n95_valve_TF"],
+        "procedural_mask": ["data", "masktype", "DatasetRaceCroppedAugBalanced", "procedural_mask_TF"]
     }
+
 }
